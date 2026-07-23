@@ -1,4 +1,21 @@
-// แผนผังเนื้อเรื่อง (Story Graph)
+// 🔴 ตั้งค่า Firebase (เอาค่าจาก Firebase Console ของคุณมาใส่ตรงนี้)
+const firebaseConfig = {
+    apiKey: "YOUR_API_KEY",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
+    databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+    projectId: "YOUR_PROJECT",
+    storageBucket: "YOUR_PROJECT.appspot.com",
+    messagingSenderId: "123456789",
+    appId: "YOUR_APP_ID"
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+let currentPlayerName = "";
+
+// ข้อมูลเนื้อเรื่อง
 const storyData = {
     1: {
         text: "คุณติดฝนหนักอยู่หน้าคฤหาสน์ร้างแห่งหนึ่ง ประตูด้านหน้าเปิดแย้มไว้เล็กน้อย แต่มุมตึกด้านขวามีแสงไฟสลัวๆ จากหน้าต่างชั้นล่าง คุณจะทำอย่างไร?",
@@ -21,47 +38,95 @@ const storyData = {
             { text: "👋 เคาะกระจกเพื่อขอความช่วยเหลือ", nextNode: 7 }
         ]
     },
-    // ฉากจบ
-    4: {
-        text: "คุณเปิดหีบออก... มันคือหีบสมบัติที่ข้างในมีทองคำเปล่งประกาย! คุณรอดชีวิตและกลายเป็นมหาเศรษฐี! 🎉 (Ending 1/4)",
-        choices: [{ text: "🔄 เล่นใหม่อีกครั้ง", nextNode: 1 }]
-    },
-    5: {
-        text: "คุณคลำหาทางในความมืดแล้วก้าวพลาดตกสไลเดอร์ลับลงไปในคุกใต้ดิน... คุณติดอยู่ในนั้นตลอดกาล 💀 (Ending 2/4)",
-        choices: [{ text: "🔄 ลองใหม่อีกครั้ง", nextNode: 1 }]
-    },
-    6: {
-        text: "คุณวิ่งลื่นสะดุดโคลนหน้าคฤหาสน์ แต่โชคดีที่มีรถแท็กซี่ขับผ่านมารับพอดี คุณรอดกลับบ้านได้อย่างปลอดภัย 🚕 (Ending 3/4)",
-        choices: [{ text: "🔄 เล่นใหม่อีกครั้ง", nextNode: 1 }]
-    },
-    7: {
-        text: "ชายแก่เดินมาเปิดประตู ยิ้มอย่างต้อนรับ แล้วชงชาอุ่นๆ ให้คุณดื่มเพื่อหลบฝน เขาคือคุณตาเจ้าของบ้านที่ใจดีมากๆ ☕ (Ending 4/4)",
-        choices: [{ text: "🔄 เล่นใหม่อีกครั้ง", nextNode: 1 }]
-    }
+    // ฉากจบ (isEnding: true)
+    4: { text: "คุณเปิดหีบออก... มันคือหีบสมบัติทองคำ! 🎉 คุณกลายเป็นมหาเศรษฐี!", isEnding: true, endingTitle: "🏆 สมบัติมหาศาล" },
+    5: { text: "คุณตกสไลเดอร์ลับลงไปในคุกใต้ดิน... ติดอยู่ในนั้นตลอดกาล 💀", isEnding: true, endingTitle: "💀 ติดในคุกใต้ดิน" },
+    6: { text: "คุณวิ่งหนีแล้วเจอรถแท็กซี่รับกลับบ้านปลอดภัย 🚕", isEnding: true, endingTitle: "🚕 หนีรอดปลอดภัย" },
+    7: { text: "ชายแก่ชงชาอุ่นๆ ให้ดื่ม เขาคือเจ้าของบ้านที่ใจดีมากๆ ☕", isEnding: true, endingTitle: "☕ ชาอุ่นหลบฝน" }
 };
 
-// ดึง Element จาก HTML
-const storyTextNode = document.getElementById('story-text');
-const choicesContainer = document.getElementById('choice-buttons');
-
-// ฟังก์ชันสำหรับเปลี่ยนเนื้อเรื่องตาม node
-function goToStoryNode(nodeId) {
-    const currentNode = storyData[nodeId];
+// ฟังก์ชันระบบ Login
+function startGame() {
+    const input = document.getElementById('username-input').value.trim();
+    if (!input) {
+        alert("กรุณากรอกชื่อก่อนเริ่มเล่นครับ!");
+        return;
+    }
     
-    // อัปเดตข้อความเนื้อเรื่อง
-    storyTextNode.innerText = currentNode.text;
+    currentPlayerName = input;
+    document.getElementById('player-display').innerText = currentPlayerName;
 
-    // เคลียร์ปุ่มเก่าออกก่อน
-    choicesContainer.innerHTML = '';
+    // สลับหน้าจอ
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
 
-    // สร้างปุ่มใหม่ตามทางเลือก
-    currentNode.choices.forEach(choice => {
+    goToStoryNode(1);
+}
+
+// ฟังก์ชันเล่นเกม
+function goToStoryNode(nodeId) {
+    const node = storyData[nodeId];
+    
+    document.getElementById('story-text').innerText = node.text;
+    const choicesBox = document.getElementById('choice-buttons');
+    choicesBox.innerHTML = '';
+
+    if (node.isEnding) {
+        // บันทึกคะแนนลง Firebase
+        saveScore(currentPlayerName, node.endingTitle);
+        showScoreboard(node.endingTitle);
+        return;
+    }
+
+    node.choices.forEach(choice => {
         const btn = document.createElement('button');
         btn.innerText = choice.text;
         btn.onclick = () => goToStoryNode(choice.nextNode);
-        choicesContainer.appendChild(btn);
+        choicesBox.appendChild(btn);
     });
 }
 
-// เริ่มต้นเกมที่ Node แรก
-goToStoryNode(1);
+// บันทึกผลลง Firebase
+function saveScore(name, ending) {
+    const scoresRef = database.ref('scores');
+    scoresRef.push({
+        name: name,
+        ending: ending,
+        timestamp: Date.now()
+    });
+}
+
+// แสดงหน้า Scoreboard และดึงข้อมูลแบบ Realtime
+function showScoreboard(endingTitle) {
+    document.getElementById('game-screen').classList.add('hidden');
+    document.getElementById('score-screen').classList.remove('hidden');
+    document.getElementById('final-result').innerText = `ฉากจบของคุณ: ${endingTitle}`;
+
+    // ดึงข้อมูลเรียลไทม์ (จำกัด 10 รายการล่าสุด)
+    database.ref('scores').limitToLast(10).on('value', (snapshot) => {
+        const scoreList = document.getElementById('score-list');
+        scoreList.innerHTML = '';
+
+        const data = snapshot.val();
+        if (data) {
+            // แปลงเป็น Array แล้วรีเวิร์สเอาอันล่าสุดขึ้นก่อน
+            const scoresArray = Object.values(data).reverse();
+            
+            scoresArray.forEach((item, index) => {
+                const row = document.createElement('div');
+                row.className = 'score-row';
+                row.innerHTML = `
+                    <span>#${index + 1} ${item.name}</span>
+                    <span>${item.ending}</span>
+                `;
+                scoreList.appendChild(row);
+            });
+        }
+    });
+}
+
+function restartGame() {
+    document.getElementById('score-screen').classList.add('hidden');
+    document.getElementById('login-screen').classList.remove('hidden');
+    document.getElementById('username-input').value = '';
+}
