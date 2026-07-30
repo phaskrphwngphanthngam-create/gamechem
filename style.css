@@ -1,113 +1,33 @@
 body {
-    background-color: #0d1117;
-    color: #e6edf3;
-    font-family: 'Sukhumvit Set', 'Segoe UI', sans-serif;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #d8d5c8;
+  font-family: system-ui, sans-serif;
 }
 
-.game-card {
-    background-color: #161b22;
-    width: 90%;
-    max-width: 550px;
-    padding: 32px;
-    border-radius: 16px;
-    border: 1px solid #30363d;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+.game-wrap {
+  text-align: center;
 }
 
-.hidden { display: none !important; }
-
-.game-title {
-    color: #f29d38;
-    font-size: 24px;
-    margin-top: 0;
-    text-align: center;
+.hud {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c2c2a;
 }
 
-/* ฟอร์ม Login */
-input[type="text"] {
-    width: 100%;
-    padding: 14px;
-    box-sizing: border-box;
-    background-color: #0d1117;
-    border: 1px solid #30363d;
-    color: white;
-    border-radius: 8px;
-    font-size: 16px;
-    margin-bottom: 16px;
-    text-align: center;
+canvas {
+  border: 2px solid #8a8880;
+  border-radius: 8px;
+  background: #e8e6dc;
+  outline: none;
 }
 
-.user-bar {
-    font-size: 14px;
-    color: #8b949e;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #30363d;
-    padding-bottom: 8px;
-}
-
-.story-box {
-    font-size: 18px;
-    line-height: 1.7;
-    margin-bottom: 24px;
-    min-height: 90px;
-}
-
-.choices-box {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-button {
-    width: 100%;
-    background-color: #21262d;
-    color: #58a6ff;
-    border: 1px solid #30363d;
-    padding: 14px 20px;
-    font-size: 16px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-button:hover {
-    background-color: #1f6feb;
-    color: white;
-    border-color: #1f6feb;
-}
-
-/* Scoreboard Style */
-.scoreboard {
-    background-color: #0d1117;
-    border-radius: 8px;
-    border: 1px solid #30363d;
-    overflow: hidden;
-    margin-top: 15px;
-}
-
-.score-header, .score-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 12px 16px;
-}
-
-.score-header {
-    background-color: #21262d;
-    font-weight: bold;
-    color: #f29d38;
-}
-
-.score-row {
-    border-bottom: 1px solid #21262d;
-}
-
-.result-text {
-    text-align: center;
-    font-size: 18px;
-    color: #7ee787;
+.hint {
+  font-size: 13px;
+  color: #5f5e5a;
+  margin-top: 8px;
 }
