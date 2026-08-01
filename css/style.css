@@ -1,44 +1,216 @@
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-body { background-color: #f0f4f8; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-
-#game-container {
-  position: relative;
-  width: 800px; height: 600px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
-  border-radius: 12px; overflow: hidden;
+/* ==========================================
+   1. RESET & BASE STYLES
+   ========================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Kanit', 'Prompt', system-ui, -apple-system, sans-serif;
 }
 
-canvas { display: block; background: #e2d1a6; }
+body {
+  background-color: #0f172a; /* สีพื้นหลังโทนเข้มคมชัด */
+  color: #334155;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  overflow: hidden;
+}
 
+/* ==========================================
+   2. GAME CONTAINER & CANVAS
+   ========================================== */
+#game-container {
+  position: relative;
+  width: 800px;
+  height: 600px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #e2e8f0;
+}
+
+#gameCanvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-color: #e5d3b3; /* สีพื้นสนามเกมสไตล์คลาสสิก */
+}
+
+/* แถบบอกวิธีบังคับมุมซ้ายล่าง */
+#controls-hint {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+/* ==========================================
+   3. MODAL (POP-UP) SYSTEM
+   ========================================== */
 .modal {
-  display: none; position: absolute; top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  justify-content: center; align-items: center; z-index: 10;
+  display: none; /* ซ่อนไว้ก่อน ปลูกให้ตื่นด้วย JS */
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.75); /* พื้นหลังดำโปร่งแสง */
+  backdrop-filter: blur(4px);
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .modal-content {
-  background: white; padding: 24px; border-radius: 16px;
-  width: 450px; text-align: center;
+  background: #ffffff;
+  width: 85%;
+  max-width: 520px;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  animation: scaleUp 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+.modal-content h2, .modal-content h3 {
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+/* ==========================================
+   4. QUIZ COMPONENTS & HINT
+   ========================================== */
+/* กล่องสถานการณ์/โจทย์คำถาม */
 .scenario-box {
-  background: #f8f9fa; border: 2px dashed #cbd5e1;
-  padding: 12px; border-radius: 8px; margin: 12px 0; font-size: 14px; text-align: left;
+  background-color: #f1f5f9;
+  border-left: 4px solid #3b82f6;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #334155;
+  text-align: left;
+  margin-bottom: 12px;
 }
 
-.options-grid { display: grid; gap: 8px; margin-top: 12px; }
+/* 💡 ปุ่มกดเปิดคำใบ้ */
+.hint-btn {
+  background-color: #fef08a;
+  color: #854d0e;
+  border: 1px solid #fde047;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
+  display: inline-block;
+}
+
+.hint-btn:hover {
+  background-color: #fde047;
+  transform: translateY(-1px);
+}
+
+/* 💡 กล่องคำใบ้แสดงผล */
+.hint-box {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  color: #b45309;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: left;
+  margin-bottom: 14px;
+  animation: fadeIn 0.3s ease;
+}
+
+/* ปุ่มตัวเลือก A, B, C, D */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
 
 .option-btn {
-  background: #f1f5f9; border: 2px solid #e2e8f0;
-  padding: 10px; border-radius: 8px; cursor: pointer; text-align: left;
+  background: #ffffff;
+  border: 2px solid #e2e8f0;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
 }
-.option-btn:hover { background: #e2e8f0; }
 
+.option-btn:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+/* ==========================================
+   5. BUTTONS & RESULT DISPLAY
+   ========================================== */
 .btn-action {
-  margin-top: 16px; background: #eab308; color: white;
-  border: none; padding: 10px 24px; border-radius: 8px; font-weight: bold; cursor: pointer;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 16px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
 }
 
-.score-display { font-size: 48px; font-weight: bold; color: #16a34a; margin: 10px 0; }
-#controls-hint { position: absolute; bottom: 10px; left: 10px; background: rgba(255,255,255,0.8); padding: 6px 12px; border-radius: 6px; font-size: 12px; }
+.btn-action:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px -2px rgba(37, 99, 235, 0.4);
+}
+
+#resultDetail {
+  margin: 12px 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #475569;
+  white-space: pre-line; /* รองรับการขึ้นบรรทัดใหม่ \n */
+}
+
+.score-display {
+  font-size: 36px;
+  font-weight: 800;
+  color: #2563eb;
+  margin: 16px 0;
+}
+
+/* ==========================================
+   6. ANIMATIONS
+   ========================================== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.85); }
+  to { opacity: 1; transform: scale(1); }
+}

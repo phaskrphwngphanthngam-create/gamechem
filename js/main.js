@@ -3,9 +3,10 @@ const ctx = canvas.getContext('2d');
 
 const player = new Player(400, 300);
 
+// เปลี่ยนการสร้างบอลมาใช้ Class CheckBall (ที่มี Pixel Art + ลูกศรสีส้ม)
 let balls = [
-  { x: 200, y: 150, qIndex: 0, active: true },
-  { x: 600, y: 150, qIndex: 1, active: true }
+  new CheckBall(200, 150, 0),
+  new CheckBall(600, 150, 1)
 ];
 
 function update() {
@@ -29,19 +30,12 @@ function update() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // วาดจุดคำถาม
+  // สั่งวาดบอลคำถามแต่ละลูกด้วยวิธี Pixel Art ของ CheckBall
   balls.forEach(ball => {
-    if (ball.active) {
-      ctx.beginPath();
-      ctx.arc(ball.x, ball.y, 14, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffffff';
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = '#000000';
-      ctx.stroke();
-    }
+    ball.draw(ctx);
   });
 
+  // วาดตัวละคร Pixel Art
   player.draw(ctx);
 }
 

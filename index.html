@@ -14,14 +14,21 @@
     <div id="controls-hint">🎮 ใช้ปุ่ม Arrow Keys หรือ W, A, S, D ในการเดิน</div>
 
     <!-- Modals -->
+    <!-- 1. Modal คำถาม (เพิ่มส่วน Hint เข้าไปแล้ว) -->
     <div id="quizModal" class="modal">
       <div class="modal-content">
         <h3>คำถามเกี่ยวกับพอลิเมอร์</h3>
         <div class="scenario-box" id="scenarioText"></div>
+        
+        <!-- 💡 ปุ่มและกล่องแสดงคำใบ้ -->
+        <button id="hintBtn" class="hint-btn" onclick="toggleHint()">💡 ดูคำใบ้</button>
+        <div id="hintBox" class="hint-box" style="display: none;"></div>
+
         <div class="options-grid" id="optionsContainer"></div>
       </div>
     </div>
 
+    <!-- 2. Modal แจ้งผลการตอบ -->
     <div id="resultModal" class="modal">
       <div class="modal-content">
         <h2 id="resultTitle"></h2>
@@ -30,6 +37,7 @@
       </div>
     </div>
 
+    <!-- 3. Modal สรุปคะแนน -->
     <div id="summaryModal" class="modal">
       <div class="modal-content">
         <h2>🏆 สรุปผลการเรียนรู้</h2>
@@ -40,7 +48,7 @@
     </div>
   </div>
 
-
+  <!-- โหลดสคริปต์ตามลำดับ -->
   <script src="js/data.js"></script>
   <script src="js/Player.js"></script>
   <script src="js/CheckBall.js"></script>

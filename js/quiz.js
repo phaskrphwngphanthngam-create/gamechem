@@ -2,11 +2,20 @@ let score = 0;
 let answeredCount = 0;
 let currentQuestionIndex = -1;
 
+// 1. เปิดหน้าคำถาม
 function openQuiz(index) {
   currentQuestionIndex = index;
   const q = questions[index];
+  
+  // ตั้งค่าสถานการณ์
   document.getElementById('scenarioText').innerText = q.scenario;
   
+  // รีเซ็ตกล่องคำใบ้ให้อยู่ในสถานะ "ปิด" ก่อนเสมอตอนเปิดคำถามใหม่
+  const hintBox = document.getElementById('hintBox');
+  hintBox.style.display = 'none';
+  hintBox.innerText = `💡 คำใบ้: ${q.hint || "ไม่มีคำใบ้สำหรับข้อนี้"}`;
+
+  // สร้างปุ่มตัวเลือก A, B, C, D
   const container = document.getElementById('optionsContainer');
   container.innerHTML = '';
   
@@ -21,6 +30,17 @@ function openQuiz(index) {
   document.getElementById('quizModal').style.display = 'flex';
 }
 
+// 2. ฟังก์ชันกดเปิด/ปิดคำใบ้ (เพิ่มเข้ามาใหม่)
+function toggleHint() {
+  const hintBox = document.getElementById('hintBox');
+  if (hintBox.style.display === 'none') {
+    hintBox.style.display = 'block';
+  } else {
+    hintBox.style.display = 'none';
+  }
+}
+
+// 3. ตรวจคำตอบ (เหมือนเดิม)
 function checkAnswer(selectedIndex) {
   document.getElementById('quizModal').style.display = 'none';
   const q = questions[currentQuestionIndex];
