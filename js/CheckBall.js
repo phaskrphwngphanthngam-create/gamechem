@@ -4,7 +4,7 @@ class CheckBall {
     this.y = y;
     this.qIndex = qIndex;
     this.active = true;
-    this.size = 16;
+    this.size = 24;
 
     // สร้าง Pixel Art ลูกบอลที่มีลูกศรชี้ข้างบน
     this.sprite = this.generatePixelSprite();
@@ -12,10 +12,10 @@ class CheckBall {
 
   generatePixelSprite() {
     const offCanvas = document.createElement('canvas');
-    offCanvas.width = 32;
-    offCanvas.height = 40; // ความสูงเผื่อไว้ใส่ลูกศรข้างบน
+    offCanvas.width = 48;
+    offCanvas.height = 60; // ความสูงเผื่อไว้ใส่ลูกศรข้างบน
     const offCtx = offCanvas.getContext('2d');
-    const pixelSize = 3;
+    const pixelSize = 5;
 
     // จานสี
     const C = {
@@ -29,8 +29,8 @@ class CheckBall {
     // ผังพิกเซลลูกศร + ลูกบอล
     const map = [
       ['.','.','.','O','O','.','.','.'], // ลูกศรสีส้มชี้ลง
+      ['.','O','O','O','O','O','O','.'],
       ['.','.','O','O','O','O','.','.'],
-      ['.','.','.','O','O','.','.','.'],
       ['.','.','.','O','O','.','.','.'],
       ['.','.','.','.','.','.','.','.'], // ช่องว่าง
       ['.','.','B','B','B','B','.','.'], // เริ่มตัวลูกบอล
@@ -55,7 +55,7 @@ class CheckBall {
 
   draw(ctx) {
     if (!this.active) return;
-    // วาด Pixel Art ลูกบอลคำถาม
-    ctx.drawImage(this.sprite, this.x - 12, this.y - 20);
+    // 💡 ปรับออฟเซ็ตตำแหน่งวาด (x-20, y-30) เพื่อให้อยู่กึ่งกลางพิกัด x, y พอดี
+    ctx.drawImage(this.sprite, this.x - 20, this.y - 30);
   }
 }

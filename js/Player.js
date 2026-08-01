@@ -2,7 +2,7 @@ class Player {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = 20; // ขนาดตัวละคร
+    this.size = 24; // ขยายขนาดสำหรับการเช็กการชน (Collision)
     this.speed = 4;
     this.keys = {};
     
@@ -16,7 +16,7 @@ class Player {
     window.addEventListener('keyup', e => this.keys[e.key] = false);
   }
 
-  // สร้าง Pixel Art 8x8 พิกเซล สำหรับ 4 ทิศทาง
+  // สร้าง Pixel Art สำหรับ 4 ทิศทาง
   generatePixelSprites() {
     const directions = ['down', 'up', 'left', 'right'];
     const sprites = {};
@@ -77,10 +77,13 @@ class Player {
 
     directions.forEach(dir => {
       const offCanvas = document.createElement('canvas');
-      offCanvas.width = 32;  // ขยายเป็น 32x32px ให้เห็นชัดๆ
-      offCanvas.height = 32;
+      // 💡 ขยาย Canvas รองรับตัวละครขนาด 48x48 Pixel
+      offCanvas.width = 48;  
+      offCanvas.height = 48;
       const offCtx = offCanvas.getContext('2d');
-      const pixelSize = 4; // 1 พิกเซลจริง = 4 พิกเซลบนหน้าจอ
+      
+      // 💡 เพิ่มขนาดแต่ละพิกเซลจาก 4 เป็น 6 (ตัวละครจะใหญ่ขึ้นเห็นชัด)
+      const pixelSize = 6; 
 
       maps[dir].forEach((row, y) => {
         row.forEach((colorKey, x) => {
@@ -115,8 +118,8 @@ class Player {
   draw(ctx) {
     const sprite = this.sprites[this.direction];
     if (sprite) {
-      // วาด Sprite ของทิศทางนั้นๆ ลงบน Canvas หลัก
-      ctx.drawImage(sprite, this.x - 16, this.y - 16);
+      // 💡 ลบออก 24 (ครึ่งหนึ่งของ 48) เพื่อวางศูนย์กลางรูปให้ตรงตำแหน่ง x, y พอดี
+      ctx.drawImage(sprite, this.x - 24, this.y - 24);
     }
   }
 }
