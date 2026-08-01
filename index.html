@@ -1,21 +1,49 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<title>เกมเดินเปิดประตู</title>
-<link rel="stylesheet" href="css/style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เกมความรู้ทางเคมี - การแก้ปัญหาพอลิเมอร์</title>
+  <!-- ดึง CSS แยกไฟล์ -->
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="game-wrap">
-    <div class="hud">
-      <span id="mapname">แมพที่ 1</span>
+
+  <div id="game-container">
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="controls-hint">🎮 ใช้ปุ่ม Arrow Keys หรือ W, A, S, D ในการเดิน</div>
+
+    <!-- Modals -->
+    <div id="quizModal" class="modal">
+      <div class="modal-content">
+        <h3>คำถามเกี่ยวกับพอลิเมอร์</h3>
+        <div class="scenario-box" id="scenarioText"></div>
+        <div class="options-grid" id="optionsContainer"></div>
+      </div>
     </div>
-    <canvas id="game" width="480" height="360"></canvas>
-    <p class="hint">ใช้ลูกศร หรือ WASD เดิน — เดินชนประตู (สีน้ำตาล) เพื่อไปแมพใหม่</p>
+
+    <div id="resultModal" class="modal">
+      <div class="modal-content">
+        <h2 id="resultTitle"></h2>
+        <p id="resultDetail"></p>
+        <button class="btn-action" onclick="closeResult()">ดำเนินการต่อ ></button>
+      </div>
+    </div>
+
+    <div id="summaryModal" class="modal">
+      <div class="modal-content">
+        <h2>🏆 สรุปผลการเรียนรู้</h2>
+        <div id="finalScore" class="score-display"></div>
+        <p id="badgeText">ยอดเยี่ยม! คุณคือผู้เชี่ยวชาญพอลิเมอร์</p>
+        <button class="btn-action" onclick="resetGame()">เล่นใหม่อีกครั้ง</button>
+      </div>
+    </div>
   </div>
 
-  <script src="js/maps.js"></script>
-  <script src="js/Player.js"></script>
-  <script src="js/Game.js"></script>
+  <!-- ดึง JavaScript แยกตามหน้าที่ (เรียงลำดับ Data -> Module -> Main) -->
+  <script src="js/data.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>

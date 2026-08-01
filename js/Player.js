@@ -1,68 +1,29 @@
-// player.js
-// การวาดตัวละคร 2D และสถานะผู้เล่น
+class Player {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+    this.size = 20;
+    this.speed = 4;
+    this.keys = {};
 
-const player = { x: 3, y: 4, dir: "down" };
-let stepToggle = false;
+    window.addEventListener('keydown', e => this.keys[e.key] = true);
+    window.addEventListener('keyup', e => this.keys[e.key] = false);
+  }
 
-function drawCharacter(ctx, px, py) {
-  const legOffset = stepToggle ? 3 : -3;
-  const cx = px + TILE / 2;
+  update(canvasWidth, canvasHeight) {
+    if (this.keys['ArrowUp'] || this.keys['w']) if (this.y > this.size) this.y -= this.speed;
+    if (this.keys['ArrowDown'] || this.keys['s']) if (this.y < canvasHeight - this.size) this.y += this.speed;
+    if (this.keys['ArrowLeft'] || this.keys['a']) if (this.x > this.size) this.x -= this.speed;
+    if (this.keys['ArrowRight'] || this.keys['d']) if (this.x < canvasWidth - this.size) this.x += this.speed;
+  }
 
-  // เงา
-  ctx.fillStyle = "rgba(0,0,0,0.15)";
-  ctx.beginPath();
-  ctx.ellipse(cx, py + TILE - 4, 10, 4, 0, 0, Math.PI * 2);
-  ctx.fill();
-
-  // ขา (ขยับสลับตอนเดิน)
-  ctx.fillStyle = "#3C3489";
-  ctx.fillRect(
-    cx - 7,
-    py + 22,
-    5,
-    10 + (player.dir === "down" || player.dir === "up" ? legOffset : 0)
-  );
-  ctx.fillRect(
-    cx + 2,
-    py + 22,
-    5,
-    10 - (player.dir === "down" || player.dir === "up" ? legOffset : 0)
-  );
-
-  // ลำตัว
-  ctx.fillStyle = "#378ADD";
-  ctx.fillRect(cx - 9, py + 10, 18, 16);
-
-  // แขน
-  ctx.fillRect(cx - 12, py + 12, 4, 10);
-  ctx.fillRect(cx + 8, py + 12, 4, 10);
-
-  // หัว
-  ctx.fillStyle = "#F0997B";
-  ctx.beginPath();
-  ctx.arc(cx, py + 6, 9, 0, Math.PI * 2);
-  ctx.fill();
-
-  // ผม
-  ctx.fillStyle = "#2C2C2A";
-  ctx.beginPath();
-  ctx.arc(cx, py + 2, 9, Math.PI, 0);
-  ctx.fill();
-
-  // ตา (หันตามทิศทาง)
-  let eyeDX = 0,
-    eyeDY = 0;
-  if (player.dir === "left") eyeDX = -3;
-  if (player.dir === "right") eyeDX = 3;
-  if (player.dir === "up") eyeDY = -2;
-  if (player.dir === "down") eyeDY = 1;
-
-  if (player.dir !== "up") {
+  draw(ctx) {
     ctx.beginPath();
-    ctx.arc(cx - 3 + eyeDX, py + 6 + eyeDY, 1.3, 0, Math.PI * 2);
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = '#8b5cf6';
     ctx.fill();
-    ctx.beginPath();
-    ctx.arc(cx + 3 + eyeDX, py + 6 + eyeDY, 1.3, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#ffffff';
+    ctx.stroke();
   }
 }
