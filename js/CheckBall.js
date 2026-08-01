@@ -55,7 +55,6 @@ class CheckBall {
 
   draw(ctx) {
     if (!this.active) return;
-    // 💡 ปรับออฟเซ็ตตำแหน่งวาด (x-20, y-30) เพื่อให้อยู่กึ่งกลางพิกัด x, y พอดี
     ctx.drawImage(this.sprite, this.x - 20, this.y - 30);
   }
 }

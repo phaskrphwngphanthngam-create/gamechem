@@ -118,7 +118,6 @@ class Player {
   draw(ctx) {
     const sprite = this.sprites[this.direction];
     if (sprite) {
-      // 💡 ลบออก 24 (ครึ่งหนึ่งของ 48) เพื่อวางศูนย์กลางรูปให้ตรงตำแหน่ง x, y พอดี
       ctx.drawImage(sprite, this.x - 24, this.y - 24);
     }
   }
