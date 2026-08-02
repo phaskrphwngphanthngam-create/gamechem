@@ -11,7 +11,7 @@
 }
 
 body {
-  background-color: #0f172a; /* สีพื้นหลังโทนเข้มคมชัด */
+  background-color: #0f172a;
   color: #334155;
   display: flex;
   justify-content: center;
@@ -25,8 +25,8 @@ body {
    ========================================== */
 #game-container {
   position: relative;
-  width: 100vw;       /* ขยายเต็มความกว้างหน้าจอ */
-  height: 100vh;      /* ขยายเต็มความสูงหน้าจอ */
+  width: 100vw;
+  height: 100vh;
   overflow: hidden;
   background-color: #e2e8f0;
 }
@@ -35,10 +35,9 @@ body {
   display: block;
   width: 100%;
   height: 100%;
-  background-color: #e5d3b3; /* สีพื้นสนามเกม */
+  background-color: #e5d3b3;
 }
 
-/* แถบบอกวิธีบังคับมุมขวาบน/ซ้ายล่าง */
 #controls-hint {
   position: absolute;
   top: 16px;
@@ -59,13 +58,13 @@ body {
    3. MODAL (POP-UP) SYSTEM
    ========================================== */
 .modal {
-  display: none; /* ซ่อนไว้ก่อน ปลูกให้ตื่นด้วย JS */
+  display: none;
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(15, 23, 42, 0.8); /* พื้นหลังดำโปร่งแสง */
+  background-color: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(6px);
   justify-content: center;
   align-items: center;
@@ -94,7 +93,6 @@ body {
 /* ==========================================
    4. QUIZ COMPONENTS & HINT
    ========================================== */
-/* กล่องสถานการณ์/โจทย์คำถาม */
 .scenario-box {
   background-color: #f1f5f9;
   border-left: 4px solid #3b82f6;
@@ -107,7 +105,6 @@ body {
   margin-bottom: 12px;
 }
 
-/* 💡 ปุ่มกดเปิดคำใบ้ */
 .hint-btn {
   background-color: #fef08a;
   color: #854d0e;
@@ -127,7 +124,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* 💡 กล่องคำใบ้แสดงผล */
 .hint-box {
   background-color: #fffbeb;
   border: 1px solid #fef3c7;
@@ -141,7 +137,6 @@ body {
   animation: fadeIn 0.3s ease;
 }
 
-/* ปุ่มตัวเลือก A, B, C, D */
 .options-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -197,7 +192,7 @@ body {
   font-size: 15px;
   line-height: 1.6;
   color: #475569;
-  white-space: pre-line; /* รองรับการขึ้นบรรทัดใหม่ \n */
+  white-space: pre-line;
 }
 
 .score-display {
@@ -248,63 +243,45 @@ body {
   font-size: 14px;
 }
 
-.leaderboard-item:nth-child(1) { border: 2px solid #facc15; color: #facc15; background: #1e1b4b; } /* อันดับ 1 สีทอง */
-.leaderboard-item:nth-child(2) { border: 2px solid #94a3b8; color: #cbd5e1; } /* อันดับ 2 สีเงิน */
-.leaderboard-item:nth-child(3) { border: 2px solid #b45309; color: #f97316; } /* อันดับ 3 สีทองแดง */
+.leaderboard-item:nth-child(1) { border: 2px solid #facc15; color: #facc15; background: #1e1b4b; }
+.leaderboard-item:nth-child(2) { border: 2px solid #94a3b8; color: #cbd5e1; }
+.leaderboard-item:nth-child(3) { border: 2px solid #b45309; color: #f97316; }
 
 /* ==========================================
-   7. TOUCH CONTROLS (D-PAD)
+   7. TOUCH CONTROLS (JOYSTICK)
    ========================================== */
-#touch-controls {
+#joystick-container {
   position: absolute;
-  bottom: 25px;
-  left: 25px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  bottom: 30px;
+  left: 30px;
+  width: 120px;
+  height: 120px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 5;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-}
-
-.dpad-middle {
-  display: flex;
-  align-items: center;
-}
-
-.dpad-center {
-  width: 50px;
-  height: 50px;
-}
-
-.dpad-btn {
-  width: 52px;
-  height: 52px;
-  background: rgba(15, 23, 42, 0.65);
-  color: #ffffff;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 14px;
-  font-size: 20px;
-  font-weight: bold;
+  touch-action: none;
   display: flex;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  transition: background 0.1s, transform 0.1s;
 }
 
-.dpad-btn:active {
+#joystick-stick {
+  position: absolute;
+  width: 50px;
+  height: 50px;
   background: rgba(37, 99, 235, 0.85);
-  border-color: #60a5fa;
-  transform: scale(0.92);
+  border: 2px solid #60a5fa;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  transition: transform 0.05s ease-out;
+  pointer-events: none;
 }
 
 /* ==========================================
-   8. HUD GAME UI (มุมซ้ายบน)
+   8. HUD GAME UI
    ========================================== */
 #game-ui {
   position: fixed;
@@ -354,14 +331,13 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* ซ่อน D-Pad บนหน้าจอคอมพิวเตอร์ Desktop */
+/* ซ่อน Joystick บนหน้าจอคอมพิวเตอร์ Desktop */
 @media (min-width: 1025px) {
-  #touch-controls {
+  #joystick-container {
     display: none;
   }
 }
 
-/* ปรับขนาด Modal ให้อ่านง่ายบนมือถือ */
 @media (max-width: 600px) {
   .modal-content {
     width: 92%;
@@ -373,14 +349,5 @@ body {
     top: auto;
     bottom: 8px;
     right: 8px;
-  }
-  .dpad-btn {
-    width: 48px;
-    height: 48px;
-    font-size: 18px;
-  }
-  .dpad-center {
-    width: 42px;
-    height: 42px;
   }
 }

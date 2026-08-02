@@ -135,6 +135,97 @@ function initGame() {
 const player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2 - 280);
 initGame();
 
+// 🕹️ ระบบ VIRTUAL JOYSTICK
+const joystickContainer = document.getElementById('joystick-container');
+const joystickStick = document.getElementById('joystick-stick');
+
+if (joystickContainer && joystickStick) {
+  let isDragging = false;
+  let activeTouchId = null;
+  const maxRadius = 40; // ระยะลากสูงสุดจากศูนย์กลาง
+
+  const resetJoystick = () => {
+    isDragging = false;
+    activeTouchId = null;
+    joystickStick.style.transform = `translate(0px, 0px)`;
+    if (typeof keys !== 'undefined') {
+      keys.ArrowUp = false;
+      keys.ArrowDown = false;
+      keys.ArrowLeft = false;
+      keys.ArrowRight = false;
+      keys.KeyW = false;
+      keys.KeyS = false;
+      keys.KeyA = false;
+      keys.KeyD = false;
+    }
+  };
+
+  const handleJoystickMove = (touch) => {
+    const rect = joystickContainer.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    let deltaX = touch.clientX - centerX;
+    let deltaY = touch.clientY - centerY;
+    const distance = Math.hypot(deltaX, deltaY);
+
+    if (distance > maxRadius) {
+      const angle = Math.atan2(deltaY, deltaX);
+      deltaX = Math.cos(angle) * maxRadius;
+      deltaY = Math.sin(angle) * maxRadius;
+    }
+
+    joystickStick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+
+    const threshold = 12; // ระยะสั่งเคลื่อนที่
+    if (typeof keys !== 'undefined') {
+      keys.ArrowLeft = deltaX < -threshold;
+      keys.ArrowRight = deltaX > threshold;
+      keys.ArrowUp = deltaY < -threshold;
+      keys.ArrowDown = deltaY > threshold;
+    }
+  };
+
+  joystickContainer.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (isDragging) return;
+    const touch = e.changedTouches[0];
+    activeTouchId = touch.identifier;
+    isDragging = true;
+    handleJoystickMove(touch);
+  }, { passive: false });
+
+  window.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === activeTouchId) {
+        handleJoystickMove(e.changedTouches[i]);
+        break;
+      }
+    }
+  }, { passive: false });
+
+  window.addEventListener('touchend', (e) => {
+    if (!isDragging) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === activeTouchId) {
+        resetJoystick();
+        break;
+      }
+    }
+  });
+
+  window.addEventListener('touchcancel', (e) => {
+    if (!isDragging) return;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === activeTouchId) {
+        resetJoystick();
+        break;
+      }
+    }
+  });
+}
+
 // 🚧 3. ระบบกันเดินลงน้ำ และกันชนสิ่งตกแต่งทั่วแมพ
 function handleCollisions(player) {
   const pRadius = 16;
