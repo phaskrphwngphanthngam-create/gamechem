@@ -6,7 +6,7 @@ let currentQuestionIndex = -1;
 // 1. เปิดหน้าคำถาม
 function openQuiz(index) {
   currentQuestionIndex = index;
-  // 💡 ดึงข้อสอบจาก currentQuestions (ชุด 10 ข้อที่สุ่มมาจาก main.js)
+  // 💡 ดึงข้อสอบจาก currentQuestions (ชุด 20 ข้อที่สุ่มมาจาก main.js)
   const q = currentQuestions[index];
   
   // ตั้งค่าสถานการณ์
@@ -69,7 +69,7 @@ function checkAnswer(selectedIndex) {
   const scoreTextElem = document.getElementById('score-text');
   const progressTextElem = document.getElementById('progress-text');
   if (scoreTextElem) scoreTextElem.innerText = score;
-  if (progressTextElem) progressTextElem.innerText = `${answeredCount} / ${typeof balls !== 'undefined' ? balls.length : 10}`;
+  if (progressTextElem) progressTextElem.innerText = `${answeredCount} / ${typeof balls !== 'undefined' ? balls.length : 20}`; // 👈 เปลี่ยนเป็น 20
 
   document.getElementById('resultModal').style.display = 'flex';
 }
@@ -78,7 +78,7 @@ function checkAnswer(selectedIndex) {
 function closeResult() {
   document.getElementById('resultModal').style.display = 'none';
   
-  const totalBalls = typeof balls !== 'undefined' ? balls.length : 10;
+  const totalBalls = typeof balls !== 'undefined' ? balls.length : 20; // 👈 เปลี่ยนเป็น 20
 
   // ถ้าตอบครบทุกข้อแล้ว
   if (answeredCount >= totalBalls) {
@@ -174,7 +174,7 @@ function resetGame() {
   const progressTextElem = document.getElementById('progress-text');
   const timerElem = document.getElementById('timer-text');
   if (scoreTextElem) scoreTextElem.innerText = score;
-  if (progressTextElem) progressTextElem.innerText = `0 / ${typeof totalQuestions !== 'undefined' ? totalQuestions : 10}`;
+  if (progressTextElem) progressTextElem.innerText = `0 / ${typeof totalQuestions !== 'undefined' ? totalQuestions : 20}`; // 👈 เปลี่ยนเป็น 20
   if (timerElem) timerElem.innerText = "00:00";
 
   // ย้ายตัวละครไปวางไว้ตรงกลางของแมพใหญ่

@@ -8,7 +8,7 @@ const WORLD_HEIGHT = 2000;
 // 🏆 ระบบคะแนน เวลา และ Leaderboard State
 let score = 0;
 let answeredCount = 0;
-let totalQuestions = 10;
+let totalQuestions = 20; // 👈 ปรับเป็น 20 ข้อ
 let secondsElapsed = 0;
 let timerInterval = null;
 
@@ -19,7 +19,7 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-function getRandomQuestions(allQuestions, count = 10) {
+function getRandomQuestions(allQuestions, count = 20) {
   let shuffled = [...allQuestions];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -87,12 +87,12 @@ for (let i = 0; i < 35; i++) {
   });
 }
 
-// 💡 2. สุ่มตำแหน่งลูกบอลทั่วแมพ
-function generateRandomPositions(count, minDistance = 220, padding = 200) {
+// 💡 2. สุ่มตำแหน่งลูกบอลทั่วแมพ (ปรับระยะห่าง minDistance และ padding ให้เหมาะกับบอล 20 ลูก)
+function generateRandomPositions(count, minDistance = 160, padding = 150) {
   const positions = [];
   let attempts = 0;
 
-  while (positions.length < count && attempts < 1000) {
+  while (positions.length < count && attempts < 3000) {
     attempts++;
     const newPos = {
       x: Math.floor(Math.random() * (WORLD_WIDTH - padding * 2)) + padding,
