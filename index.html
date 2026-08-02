@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>เกมความรู้ทางเคมี - การแก้ปัญหาพอลิเมอร์</title>
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
 
@@ -29,11 +29,14 @@
       </div>
     </div>
 
-    <div id="controls-hint">🎮 ใช้ ปุ่มลูกศร / WASD หรือ จอยสติ๊กสัมผัสบนจอ ในการเดิน</div>
+    <div id="controls-hint">🎮 ใช้ ปุ่มลูกศร / WASD หรือ ปุ่มสัมผัสบนจอ ในการเดิน</div>
 
-    <!-- 🕹️ จอยสติ๊กแบบลากสำหรับมือถือ / iPad -->
-    <div id="joystick-container">
-      <div id="joystick-stick"></div>
+    <!-- 🕹️ ปุ่มกดเดิน (D-Pad) สำหรับ มือถือ / iPad -->
+    <div id="dpad-container">
+      <button class="dpad-btn dpad-up" id="btn-up">▲</button>
+      <button class="dpad-btn dpad-left" id="btn-left">◀</button>
+      <button class="dpad-btn dpad-right" id="btn-right">▶</button>
+      <button class="dpad-btn dpad-down" id="btn-down">▼</button>
     </div>
 
     <!-- Modals -->
@@ -87,10 +90,10 @@
 
   </div>
 
-  <script src="js/data.js?v=4"></script>
-  <script src="js/Player.js?v=4"></script>
-  <script src="js/CheckBall.js?v=4"></script>
-  <script src="js/quiz.js?v=4"></script>
-  <script src="js/main.js?v=4"></script>
+  <script src="js/data.js"></script>
+  <script src="js/Player.js"></script>
+  <script src="js/CheckBall.js"></script>
+  <script src="js/quiz.js"></script>
+  <script src="js/main.js"></script>
 </body>
 </html>

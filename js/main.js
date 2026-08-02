@@ -135,96 +135,48 @@ function initGame() {
 const player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2 - 280);
 initGame();
 
-// 🕹️ ระบบ VIRTUAL JOYSTICK
-const joystickContainer = document.getElementById('joystick-container');
-const joystickStick = document.getElementById('joystick-stick');
+// 🕹️ ระบบควบคุม D-PAD สำหรับสัมผัสหน้าจอ (มือถือ / iPad)
+const dpadButtons = {
+  'btn-up': ['ArrowUp', 'KeyW'],
+  'btn-down': ['ArrowDown', 'KeyS'],
+  'btn-left': ['ArrowLeft', 'KeyA'],
+  'btn-right': ['ArrowRight', 'KeyD']
+};
 
-if (joystickContainer && joystickStick) {
-  let isDragging = false;
-  let activeTouchId = null;
-  const maxRadius = 40; // ระยะลากสูงสุดจากศูนย์กลาง
+function setupDpadControls() {
+  Object.keys(dpadButtons).forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (!btn) return;
 
-  const resetJoystick = () => {
-    isDragging = false;
-    activeTouchId = null;
-    joystickStick.style.transform = `translate(0px, 0px)`;
-    if (typeof keys !== 'undefined') {
-      keys.ArrowUp = false;
-      keys.ArrowDown = false;
-      keys.ArrowLeft = false;
-      keys.ArrowRight = false;
-      keys.KeyW = false;
-      keys.KeyS = false;
-      keys.KeyA = false;
-      keys.KeyD = false;
-    }
-  };
+    const keyCodes = dpadButtons[btnId];
 
-  const handleJoystickMove = (touch) => {
-    const rect = joystickContainer.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-
-    let deltaX = touch.clientX - centerX;
-    let deltaY = touch.clientY - centerY;
-    const distance = Math.hypot(deltaX, deltaY);
-
-    if (distance > maxRadius) {
-      const angle = Math.atan2(deltaY, deltaX);
-      deltaX = Math.cos(angle) * maxRadius;
-      deltaY = Math.sin(angle) * maxRadius;
-    }
-
-    joystickStick.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-
-    const threshold = 12; // ระยะสั่งเคลื่อนที่
-    if (typeof keys !== 'undefined') {
-      keys.ArrowLeft = deltaX < -threshold;
-      keys.ArrowRight = deltaX > threshold;
-      keys.ArrowUp = deltaY < -threshold;
-      keys.ArrowDown = deltaY > threshold;
-    }
-  };
-
-  joystickContainer.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    if (isDragging) return;
-    const touch = e.changedTouches[0];
-    activeTouchId = touch.identifier;
-    isDragging = true;
-    handleJoystickMove(touch);
-  }, { passive: false });
-
-  window.addEventListener('touchmove', (e) => {
-    if (!isDragging) return;
-    for (let i = 0; i < e.changedTouches.length; i++) {
-      if (e.changedTouches[i].identifier === activeTouchId) {
-        handleJoystickMove(e.changedTouches[i]);
-        break;
+    const pressHandler = (e) => {
+      e.preventDefault();
+      if (typeof keys !== 'undefined') {
+        keyCodes.forEach(code => { keys[code] = true; });
       }
-    }
-  }, { passive: false });
+    };
 
-  window.addEventListener('touchend', (e) => {
-    if (!isDragging) return;
-    for (let i = 0; i < e.changedTouches.length; i++) {
-      if (e.changedTouches[i].identifier === activeTouchId) {
-        resetJoystick();
-        break;
+    const releaseHandler = (e) => {
+      e.preventDefault();
+      if (typeof keys !== 'undefined') {
+        keyCodes.forEach(code => { keys[code] = false; });
       }
-    }
-  });
+    };
 
-  window.addEventListener('touchcancel', (e) => {
-    if (!isDragging) return;
-    for (let i = 0; i < e.changedTouches.length; i++) {
-      if (e.changedTouches[i].identifier === activeTouchId) {
-        resetJoystick();
-        break;
-      }
-    }
+    // รองรับระบบสัมผัส (Touch Screen)
+    btn.addEventListener('touchstart', pressHandler, { passive: false });
+    btn.addEventListener('touchend', releaseHandler, { passive: false });
+    btn.addEventListener('touchcancel', releaseHandler, { passive: false });
+
+    // รองรับการคลิกด้วยเมาส์ (สำหรับการทดสอบบนเบราว์เซอร์ PC)
+    btn.addEventListener('mousedown', pressHandler);
+    btn.addEventListener('mouseup', releaseHandler);
+    btn.addEventListener('mouseleave', releaseHandler);
   });
 }
+
+setupDpadControls();
 
 // 🚧 3. ระบบกันเดินลงน้ำ และกันชนสิ่งตกแต่งทั่วแมพ
 function handleCollisions(player) {
