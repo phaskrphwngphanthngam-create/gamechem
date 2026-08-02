@@ -2,7 +2,7 @@ class Player {
   constructor(x, y) {
     this.x = x;
     this.y = y;
-    this.size = 24; // ขยายขนาดสำหรับการเช็กการชน (Collision)
+    this.size = 24; // ขนาดสำหรับการเช็กชน (Collision)
     this.speed = 4;
     this.keys = {};
     
@@ -12,8 +12,41 @@ class Player {
     // วาด Pixel Art ตัวละครเก็บไว้ใน Canvas จำลอง (Offscreen Canvas)
     this.sprites = this.generatePixelSprites();
 
+    // Event ดักจับการกดคีย์บอร์ด (คอมพิวเตอร์)
     window.addEventListener('keydown', e => this.keys[e.key] = true);
     window.addEventListener('keyup', e => this.keys[e.key] = false);
+
+    // 📱 ดักจับการแตะปุ่มบนหน้าจอ (มือถือ & iPad)
+    this.setupTouchControls();
+  }
+
+  // 📱 ฟังก์ชันเชื่อมปุ่ม Virtual D-Pad บนหน้าจอกับระบบการเดิน
+  setupTouchControls() {
+    const bindBtn = (btnId, keyName) => {
+      const btn = document.getElementById(btnId);
+      if (!btn) return;
+
+      const press = (e) => {
+        e.preventDefault(); // ป้องกันอาการ Zoom หรือ Scroll จอขณะเล่น
+        this.keys[keyName] = true;
+      };
+
+      const release = (e) => {
+        e.preventDefault();
+        this.keys[keyName] = false;
+      };
+
+      // ใช้ Pointer Events รองรับทั้ง Touch screen และ Mouse
+      btn.addEventListener('pointerdown', press);
+      btn.addEventListener('pointerup', release);
+      btn.addEventListener('pointerleave', release);
+      btn.addEventListener('pointercancel', release);
+    };
+
+    bindBtn('btn-up', 'ArrowUp');
+    bindBtn('btn-down', 'ArrowDown');
+    bindBtn('btn-left', 'ArrowLeft');
+    bindBtn('btn-right', 'ArrowRight');
   }
 
   // สร้าง Pixel Art สำหรับ 4 ทิศทาง
@@ -77,12 +110,10 @@ class Player {
 
     directions.forEach(dir => {
       const offCanvas = document.createElement('canvas');
-      // 💡 ขยาย Canvas รองรับตัวละครขนาด 48x48 Pixel
       offCanvas.width = 48;  
       offCanvas.height = 48;
       const offCtx = offCanvas.getContext('2d');
       
-      // 💡 เพิ่มขนาดแต่ละพิกเซลจาก 4 เป็น 6 (ตัวละครจะใหญ่ขึ้นเห็นชัด)
       const pixelSize = 6; 
 
       maps[dir].forEach((row, y) => {

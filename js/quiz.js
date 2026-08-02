@@ -2,15 +2,26 @@ let score = 0;
 let answeredCount = 0;
 let currentQuestionIndex = -1;
 
+// ฟังก์ชันสุ่มสลับตำแหน่งอาร์เรย์ และตัดเอามาตามจำนวนที่ต้องการ
+function getRandomQuestions(allQuestions, count = 10) {
+  let shuffled = [...allQuestions];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, Math.min(count, shuffled.length));
+}
+
 // 1. เปิดหน้าคำถาม
 function openQuiz(index) {
   currentQuestionIndex = index;
-  const q = questions[index];
+  // 💡 ดึงข้อสอบจาก currentQuestions (ชุด 10 ข้อที่สุ่มมา)
+  const q = currentQuestions[index];
   
   // ตั้งค่าสถานการณ์
   document.getElementById('scenarioText').innerText = q.scenario;
   
-  // รีเซ็ตกล่องคำใบ้ให้อยู่ในสถานะ "ปิด" ก่อนเสมอตอนเปิดคำถามใหม่
+  // รีเซ็ตกล่องคำใบ้ให้อยู่ในสถานะ "ปิด" ก่อนเสมอ
   const hintBox = document.getElementById('hintBox');
   hintBox.style.display = 'none';
   hintBox.innerText = `💡 คำใบ้: ${q.hint || "ไม่มีคำใบ้สำหรับข้อนี้"}`;
@@ -30,7 +41,7 @@ function openQuiz(index) {
   document.getElementById('quizModal').style.display = 'flex';
 }
 
-// 2. ฟังก์ชันกดเปิด/ปิดคำใบ้ (เพิ่มเข้ามาใหม่)
+// 2. ฟังก์ชันกดเปิด/ปิดคำใบ้
 function toggleHint() {
   const hintBox = document.getElementById('hintBox');
   if (hintBox.style.display === 'none') {
@@ -40,10 +51,11 @@ function toggleHint() {
   }
 }
 
-// 3. ตรวจคำตอบ (เหมือนเดิม)
+// 3. ตรวจคำตอบ
 function checkAnswer(selectedIndex) {
   document.getElementById('quizModal').style.display = 'none';
-  const q = questions[currentQuestionIndex];
+  // 💡 ดึงข้อสอบจาก currentQuestions
+  const q = currentQuestions[currentQuestionIndex];
   const isCorrect = selectedIndex === q.answer;
 
   const title = document.getElementById('resultTitle');
@@ -57,13 +69,14 @@ function checkAnswer(selectedIndex) {
   } else {
     title.innerText = "❌ ยังไม่ถูกต้อง";
     title.style.color = "#dc2626";
-    detail.innerText = `คำตอบที่ถูกต้องคือ ${q.options[q.answer]}\n💡 คำใบ้: ${q.hint}`;
+    detail.innerText = `คำตอบที่ถูกต้องคือ ${q.options[q.answer]}\n💡 คำใบ้: ${q.hint || "ไม่มีคำใบ้สำหรับข้อนี้"}`;
   }
 
   answeredCount++;
   document.getElementById('resultModal').style.display = 'flex';
 }
 
+// 4. ปิดหน้าแจ้งผล และเช็กว่าตอบครบทุกบอลหรือยัง
 function closeResult() {
   document.getElementById('resultModal').style.display = 'none';
   if (answeredCount >= balls.length) {
@@ -72,11 +85,17 @@ function closeResult() {
   }
 }
 
+// 5. รีเซ็ตเกมใหม่ (สุ่มชุดคำถาม 10 ข้อใหม่ทันที)
 function resetGame() {
   score = 0;
   answeredCount = 0;
-  player.x = 400;
-  player.y = 300;
-  balls.forEach(b => b.active = true);
+  player.x = window.innerWidth / 2;
+  player.y = window.innerHeight / 2;
+
+  // 💡 เรียกฟังก์ชันสุ่มคำถามและสร้างจุดบอลใหม่จาก main.js
+  if (typeof initGame === 'function') {
+    initGame();
+  }
+
   document.getElementById('summaryModal').style.display = 'none';
 }

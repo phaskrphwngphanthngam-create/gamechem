@@ -212,3 +212,74 @@ body {
   from { opacity: 0; transform: scale(0.85); }
   to { opacity: 1; transform: scale(1); }
 }
+
+#touch-controls {
+  position: absolute;
+  bottom: 25px;
+  left: 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.dpad-middle {
+  display: flex;
+  align-items: center;
+}
+
+.dpad-center {
+  width: 50px;
+  height: 50px;
+}
+
+.dpad-btn {
+  width: 52px;
+  height: 52px;
+  background: rgba(15, 23, 42, 0.6);
+  color: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 14px;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.1s, transform 0.1s;
+}
+
+.dpad-btn:active {
+  background: rgba(37, 99, 235, 0.8);
+  border-color: #60a5fa;
+  transform: scale(0.92);
+}
+
+/* ปรับขนาด Modal ให้อ่านง่ายบนมือถือ */
+@media (max-width: 600px) {
+  .modal-content {
+    width: 92%;
+    padding: 18px;
+  }
+  #controls-hint {
+    font-size: 11px;
+    padding: 6px 12px;
+    bottom: 8px;
+    left: 8px;
+  }
+  .dpad-btn {
+    width: 46px;
+    height: 46px;
+    font-size: 18px;
+  }
+  .dpad-center {
+    width: 44px;
+    height: 44px;
+  }
+}
