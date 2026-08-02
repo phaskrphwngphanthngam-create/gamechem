@@ -2,16 +2,6 @@ let score = 0;
 let answeredCount = 0;
 let currentQuestionIndex = -1;
 
-// ฟังก์ชันสุ่มสลับตำแหน่งอาร์เรย์ และตัดเอามาตามจำนวนที่ต้องการ
-function getRandomQuestions(allQuestions, count = 10) {
-  let shuffled = [...allQuestions];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled.slice(0, Math.min(count, shuffled.length));
-}
-
 // 1. เปิดหน้าคำถาม
 function openQuiz(index) {
   currentQuestionIndex = index;
@@ -85,14 +75,21 @@ function closeResult() {
   }
 }
 
-// 5. รีเซ็ตเกมใหม่ (สุ่มชุดคำถาม 10 ข้อใหม่ทันที)
+// 5. รีเซ็ตเกมใหม่ (สุ่มตำแหน่งบอล + คำถามชุดใหม่)
 function resetGame() {
   score = 0;
   answeredCount = 0;
-  player.x = window.innerWidth / 2;
-  player.y = window.innerHeight / 2;
 
-  // 💡 เรียกฟังก์ชันสุ่มคำถามและสร้างจุดบอลใหม่จาก main.js
+  // 💡 ย้ายตัวละครไปวางไว้ตรงกลางของแมพใหญ่
+  if (typeof WORLD_WIDTH !== 'undefined' && typeof WORLD_HEIGHT !== 'undefined') {
+    player.x = WORLD_WIDTH / 2;
+    player.y = WORLD_HEIGHT / 2;
+  } else {
+    player.x = window.innerWidth / 2;
+    player.y = window.innerHeight / 2;
+  }
+
+  // 💡 เรียกฟังก์ชันสุ่มคำถามและสุ่มตำแหน่งสร้างจุดบอลใหม่จาก main.js
   if (typeof initGame === 'function') {
     initGame();
   }

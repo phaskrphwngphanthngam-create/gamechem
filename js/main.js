@@ -1,7 +1,10 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-// 💡 ปรับขนาด Canvas ให้เต็มหน้าจอ
+// 💡 1. กำหนดขนาดแมพจริง (World Bounds) ให้ใหญ่กว่าหน้าจอ
+const WORLD_WIDTH = 2400;  // ความกว้างแมพจริง
+const WORLD_HEIGHT = 1800; // ความสูงแมพจริง
+
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -9,53 +12,41 @@ function resizeCanvas() {
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
-// 💡 ฟังก์ชันสุ่มสลับคำถาม (Fisher-Yates Shuffle)
-function getRandomQuestions(allQuestions, count = 10) {
-  let shuffled = [...allQuestions];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+// 💡 2. ฟังก์ชันสุ่มตำแหน่งลูกบอลทั่วแมพ (ไม่ให้ติดขอบแมพเกินไป)
+function generateRandomPositions(count, padding = 150) {
+  const positions = [];
+  for (let i = 0; i < count; i++) {
+    positions.push({
+      x: Math.floor(Math.random() * (WORLD_WIDTH - padding * 2)) + padding,
+      y: Math.floor(Math.random() * (WORLD_HEIGHT - padding * 2)) + padding
+    });
   }
-  return shuffled.slice(0, Math.min(count, shuffled.length));
+  return positions;
 }
 
-// 💡 กำหนดตำแหน่งสำหรับวางลูกบอล 10 จุดบนหน้าจอ
-const ballPositions = [
-  { x: 200, y: 150 }, { x: 500, y: 150 }, { x: 800, y: 150 },
-  { x: 200, y: 350 }, { x: 500, y: 350 }, { x: 800, y: 350 },
-  { x: 200, y: 550 }, { x: 500, y: 550 }, { x: 800, y: 550 },
-  { x: 1100, y: 350 }
-];
-
-// ตัวแปรเก็บคำถาม 10 ข้อที่ถูกสุ่มเลือกมา
 let currentQuestions = [];
 let balls = [];
 
-// 💡 ฟังก์ชันเริ่มต้นสร้างจุดบอลคำถาม
+// 💡 3. ฟังก์ชันสร้างบอลแบบสุ่มสลับคำถาม + สุ่มตำแหน่งแมพ
 function initGame() {
   currentQuestions = getRandomQuestions(questions, 10);
-  
+  const randomPositions = generateRandomPositions(currentQuestions.length);
+
   balls = currentQuestions.map((q, index) => {
-    // ถ้ามีตำแหน่งกำหนดไว้ให้ใช้ตำแหน่งนั้น ถ้าไม่มีสุ่มตำแหน่งให้อยู่ในหน้าจอ
-    let pos = ballPositions[index] || {
-      x: Math.random() * (canvas.width - 200) + 100,
-      y: Math.random() * (canvas.height - 200) + 100
-    };
-    return new CheckBall(pos.x, pos.y, index);
+    return new CheckBall(randomPositions[index].x, randomPositions[index].y, index);
   });
 }
 
-// สร้างผู้เล่นไว้กลางจอ
-const player = new Player(window.innerWidth / 2, window.innerHeight / 2);
+// สร้างตัวละครไว้กลางแมพใหญ่
+const player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2);
 
-// เรียกสร้างบอลคำถามครั้งแรก
 initGame();
 
 function update() {
-  // หยุดเดินถ้ามี Pop-up หรือ Modal เปิดอยู่
   if (document.querySelector('.modal[style*="display: flex"]')) return;
 
-  player.update(canvas.width, canvas.height);
+  // ส่งขนาด WORLD ไปเช็กขอบเขตแมพแทน canvas
+  player.update(WORLD_WIDTH, WORLD_HEIGHT);
 
   // เช็กการชนจุดคำถาม
   balls.forEach(ball => {
@@ -72,13 +63,50 @@ function update() {
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+  // 💡 4. คำนวณ Camera Offset ให้เลื่อนตามตัวละครให้อยู่กลางจอเสมอ
+  let cameraX = player.x - canvas.width / 2;
+  let cameraY = player.y - canvas.height / 2;
+
+  // บล็อกกล้องไม่ให้หลุดขอบแมพใหญ่
+  cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - canvas.width));
+  cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT - canvas.height));
+
+  ctx.save();
+  // เลื่อนพิกเซลการวาดตามตำแหน่งกล้อง
+  ctx.translate(-cameraX, -cameraY);
+
+  // วาดพื้นหลัง/เส้นตารางของแมพ (ช่วยให้เห็นชัดว่าแมพกว้างขึ้น)
+  drawMapGrid();
+
   // วาดลูกบอลคำถาม
   balls.forEach(ball => {
     ball.draw(ctx);
   });
 
-  // วาดตัวละคร Pixel Art
+  // วาดตัวละคร
   player.draw(ctx);
+
+  ctx.restore();
+}
+
+// วาดเส้น Grid พื้นหลังแมพ
+function drawMapGrid() {
+  const gridSize = 100;
+  ctx.strokeStyle = '#e2e8f0';
+  ctx.lineWidth = 1;
+
+  for (let x = 0; x <= WORLD_WIDTH; x += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, WORLD_HEIGHT);
+    ctx.stroke();
+  }
+  for (let y = 0; y <= WORLD_HEIGHT; y += gridSize) {
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(WORLD_WIDTH, y);
+    ctx.stroke();
+  }
 }
 
 function gameLoop() {
