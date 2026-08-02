@@ -3,8 +3,13 @@ class Player {
     this.x = x;
     this.y = y;
     this.size = 24; // ขนาดสำหรับการเช็กการชน (Collision)
-    this.speed = 4;
+    
+    // ⚙️ ตั้งค่าความเร็วแยกกันตรงนี้
+    this.speed = 4;       // 💻 ความเร็วบน PC (คีย์บอร์ด)
+    this.dpadSpeed = 8;   // 📱 ความเร็วบน Virtual D-Pad (ปรับให้เร็วขึ้นได้ตามใจชอบ)
+    
     this.keys = {};
+    this.isDpadPressed = false; // เช็กว่าใช้ D-Pad หรือไม่
     
     // ทิศทางปัจจุบัน: 'down', 'up', 'left', 'right'
     this.direction = 'down';
@@ -29,11 +34,13 @@ class Player {
       const press = (e) => {
         e.preventDefault();
         this.keys[keyName] = true;
+        this.isDpadPressed = true; // ✅ ใช้ความเร็ว D-Pad
       };
 
       const release = (e) => {
         e.preventDefault();
         this.keys[keyName] = false;
+        this.isDpadPressed = false; // ✅ ปล่อย D-Pad
       };
 
       btn.addEventListener('pointerdown', press);
@@ -221,7 +228,6 @@ class Player {
       offCanvas.height = 48;
       const offCtx = offCanvas.getContext('2d');
       
-      // 💡 32x32 ใช้ขนาดพิกเซลละ 1.5 พิกเซล (32 * 1.5 = 48px พอดีหน้าจอ)
       const pixelSize = 1.5; 
 
       maps[dir].forEach((row, y) => {
@@ -239,17 +245,20 @@ class Player {
   }
 
   update(canvasWidth, canvasHeight) {
+    // ⚡ เลือกความเร็วขึ้นอยู่กับสวิตช์ D-Pad
+    const currentSpeed = this.isDpadPressed ? this.dpadSpeed : this.speed;
+
     if (this.keys['ArrowUp'] || this.keys['w']) {
-      if (this.y > this.size) this.y -= this.speed;
+      if (this.y > this.size) this.y -= currentSpeed;
       this.direction = 'up';
     } else if (this.keys['ArrowDown'] || this.keys['s']) {
-      if (this.y < canvasHeight - this.size) this.y += this.speed;
+      if (this.y < canvasHeight - this.size) this.y += currentSpeed;
       this.direction = 'down';
     } else if (this.keys['ArrowLeft'] || this.keys['a']) {
-      if (this.x > this.size) this.x -= this.speed;
+      if (this.x > this.size) this.x -= currentSpeed;
       this.direction = 'left';
     } else if (this.keys['ArrowRight'] || this.keys['d']) {
-      if (this.x < canvasWidth - this.size) this.x += this.speed;
+      if (this.x < canvasWidth - this.size) this.x += currentSpeed;
       this.direction = 'right';
     }
   }
