@@ -5,6 +5,13 @@ const ctx = canvas.getContext('2d');
 const WORLD_WIDTH = 2500;  
 const WORLD_HEIGHT = 2000; 
 
+// 🏆 ระบบคะแนน เวลา และ Leaderboard State
+let score = 0;
+let answeredCount = 0;
+let totalQuestions = 10;
+let secondsElapsed = 0;
+let timerInterval = null;
+
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -19,6 +26,25 @@ function getRandomQuestions(allQuestions, count = 10) {
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled.slice(0, Math.min(count, shuffled.length));
+}
+
+// ⏱️ ระบบจับเวลา
+function startTimer() {
+  secondsElapsed = 0;
+  clearInterval(timerInterval);
+  
+  timerInterval = setInterval(() => {
+    secondsElapsed++;
+    const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+    const secs = String(secondsElapsed % 60).padStart(2, '0');
+    
+    const timerElem = document.getElementById("timer-text");
+    if (timerElem) timerElem.innerText = `${mins}:${secs}`;
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
 }
 
 // 🌳 ข้อมูลตำแหน่งสิ่งตกแต่ง 32x32 บนแมพ
@@ -87,32 +113,40 @@ let currentQuestions = [];
 let balls = [];
 
 function initGame() {
-  currentQuestions = getRandomQuestions(questions, 10);
+  score = 0;
+  answeredCount = 0;
+  secondsElapsed = 0;
+  
+  // อัปเดต UI หน้าจอเริ่มต้น
+  document.getElementById("score-text").innerText = score;
+  document.getElementById("progress-text").innerText = `0 / ${totalQuestions}`;
+  document.getElementById("timer-text").innerText = "00:00";
+
+  currentQuestions = getRandomQuestions(questions, totalQuestions);
   const randomPositions = generateRandomPositions(currentQuestions.length);
 
   balls = currentQuestions.map((q, index) => {
     return new CheckBall(randomPositions[index].x, randomPositions[index].y, index);
   });
+
+  startTimer();
 }
 
 const player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2 - 280);
 initGame();
 
-// 🚧 3. ระบบกันเดินลงน้ำ และกันชนสิ่งตกแต่งทั่วแมพ (Map Extension Collision System)
+// 🚧 3. ระบบกันเดินลงน้ำ และกันชนสิ่งตกแต่งทั่วแมพ
 function handleCollisions(player) {
-  const pRadius = 16; // รัศมีตัวละคร
+  const pRadius = 16;
 
-  // 1. กันเดินทะลุรั้วขอบสวน (World Boundaries)
   const padding = 24;
   player.x = Math.max(padding, Math.min(WORLD_WIDTH - padding, player.x));
   player.y = Math.max(padding, Math.min(WORLD_HEIGHT - padding, player.y));
 
-  // 2. กันเดินลงสระน้ำ (Water Collision)
   const pondX = WORLD_WIDTH / 2;
   const pondY = WORLD_HEIGHT / 2;
   const pondRadius = 225;
 
-  // ทางเดินข้ามสะพานไม้
   const isOnBridgeN = (player.x >= pondX - 35 && player.x <= pondX + 35 && player.y >= pondY - 225 && player.y <= pondY - 170);
   const isOnBridgeS = (player.x >= pondX - 35 && player.x <= pondX + 35 && player.y >= pondY + 170 && player.y <= pondY + 225);
 
@@ -125,7 +159,6 @@ function handleCollisions(player) {
     }
   }
 
-  // 3. กันเดินชนลำต้นไม้ (Tree Collision)
   parkElements.trees.forEach(t => {
     const dist = Math.hypot(player.x - t.x, player.y - (t.y + 20));
     const treeRadius = 24;
@@ -136,7 +169,6 @@ function handleCollisions(player) {
     }
   });
 
-  // 4. กันเดินชนม้านั่ง (Bench Collision)
   parkElements.benches.forEach(b => {
     if (Math.abs(player.x - b.x) < 38 && Math.abs(player.y - b.y) < 18) {
       if (player.x < b.x) player.x = b.x - 38;
@@ -146,7 +178,6 @@ function handleCollisions(player) {
     }
   });
 
-  // 5. กันเดินชนเสาไฟ (Lamp Collision)
   parkElements.lamps.forEach(l => {
     const dist = Math.hypot(player.x - l.x, player.y - l.y);
     if (dist < 15 + pRadius) {
@@ -161,8 +192,6 @@ function update() {
   if (document.querySelector('.modal[style*="display: flex"]')) return;
 
   player.update(WORLD_WIDTH, WORLD_HEIGHT);
-  
-  // ⛔ ประมวลผลระบบกันเดินตกน้ำ/ชนสิ่งของทั้งหมด
   handleCollisions(player);
 
   balls.forEach(ball => {
@@ -188,16 +217,9 @@ function draw() {
   ctx.save();
   ctx.translate(-cameraX, -cameraY);
 
-  // 1. วาดพื้นหลัง
   drawParkGround();
-
-  // 2. วาดลูกบอลคำถาม
   balls.forEach(ball => ball.draw(ctx));
-
-  // 3. วาดวัตถุ + ตัวละคร + น้ำพุ
   drawParkObjectsAndPlayer();
-
-  // 4. แสงบรรยากาศ
   drawLightingOverlay();
 
   ctx.restore();
@@ -208,11 +230,9 @@ function drawParkGround() {
   const centerX = WORLD_WIDTH / 2;
   const centerY = WORLD_HEIGHT / 2;
 
-  // หญ้า
   ctx.fillStyle = '#86efac';
   ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
 
-  // กอหญ้า
   ctx.fillStyle = '#4ade80';
   for (let x = 80; x < WORLD_WIDTH; x += 180) {
     for (let y = 80; y < WORLD_HEIGHT; y += 180) {
@@ -222,7 +242,6 @@ function drawParkGround() {
     }
   }
 
-  // ทางเดินอิฐ
   ctx.fillStyle = '#fef08a';
   ctx.strokeStyle = '#eab308';
   ctx.lineWidth = 50;
@@ -233,14 +252,12 @@ function drawParkGround() {
   ctx.moveTo(100, centerY); ctx.lineTo(WORLD_WIDTH - 100, centerY);
   ctx.stroke();
 
-  // ลายบล็อกอิฐ
   ctx.strokeStyle = '#ca8a04';
   ctx.lineWidth = 2;
   for (let y = 120; y < WORLD_HEIGHT - 100; y += 40) {
     ctx.beginPath(); ctx.moveTo(centerX - 20, y); ctx.lineTo(centerX + 20, y); ctx.stroke();
   }
 
-  // สระน้ำ
   ctx.fillStyle = '#94a3b8';
   ctx.beginPath(); ctx.arc(centerX, centerY, 240, 0, Math.PI * 2); ctx.fill();
 
@@ -250,12 +267,10 @@ function drawParkGround() {
   ctx.fillStyle = '#38bdf8';
   ctx.beginPath(); ctx.arc(centerX - 10, centerY - 10, 180, 0, Math.PI * 2); ctx.fill();
 
-  // ประกายน้ำ
   ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
   ctx.fillRect(centerX - 120, centerY - 80, 40, 6);
   ctx.fillRect(centerX + 80, centerY + 60, 50, 6);
 
-  // ใบบัว
   parkElements.lilyPads.forEach(pad => {
     ctx.fillStyle = '#15803d';
     ctx.beginPath(); ctx.arc(pad.x, pad.y, 18, 0, Math.PI * 1.8); ctx.fill();
@@ -263,7 +278,6 @@ function drawParkGround() {
     ctx.fillRect(pad.x - 3, pad.y - 3, 6, 6);
   });
 
-  // สะพานไม้
   ctx.fillStyle = '#78350f';
   ctx.fillRect(centerX - 40, centerY - 225, 80, 55);
   ctx.fillRect(centerX - 40, centerY + 170, 80, 55);
@@ -271,7 +285,6 @@ function drawParkGround() {
   for (let i = -220; i <= -175; i += 12) ctx.fillRect(centerX - 40, centerY + i, 80, 3);
   for (let i = 175; i <= 220; i += 12) ctx.fillRect(centerX - 40, centerY + i, 80, 3);
 
-  // ดอกไม้
   parkElements.flowers.forEach(f => {
     ctx.fillStyle = f.c;
     ctx.fillRect(f.x, f.y, 10, 10);
@@ -280,7 +293,6 @@ function drawParkGround() {
     ctx.fillRect(f.x + 3, f.y + 3, 4, 4);
   });
 
-  // เสาไฟ
   parkElements.lamps.forEach(l => {
     ctx.fillStyle = '#1e293b';
     ctx.fillRect(l.x - 4, l.y - 20, 8, 35);
@@ -289,7 +301,6 @@ function drawParkGround() {
     ctx.fillRect(l.x - 8, l.y - 30, 16, 12);
   });
 
-  // รั้วรอบสวน
   ctx.strokeStyle = '#854d0e';
   ctx.lineWidth = 16;
   ctx.strokeRect(8, 8, WORLD_WIDTH - 16, WORLD_HEIGHT - 16);
@@ -436,6 +447,13 @@ function drawLightingOverlay() {
     ctx.arc(l.x, l.y - 25, 90, 0, Math.PI * 2);
     ctx.fill();
   });
+}
+
+function resetGame() {
+  document.getElementById("summaryModal").style.display = "none";
+  player.x = WORLD_WIDTH / 2;
+  player.y = WORLD_HEIGHT / 2 - 280;
+  initGame();
 }
 
 function gameLoop() {
