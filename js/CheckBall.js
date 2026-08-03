@@ -113,7 +113,7 @@ class CheckBall {
 
     // วาดรูปทรงลูกศรสีเหลืองชี้ลง
     ctx.fillStyle = '#FF0000'; // สีแดง
-    ctx.strokeStyle = '#854d0e'; // ขอบน้ำตาลเข้ม
+    ctx.strokeStyle = '#000000'; // สีดำ
     ctx.lineWidth = 2;
 
     ctx.beginPath();
