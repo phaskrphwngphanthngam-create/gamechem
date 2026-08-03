@@ -252,7 +252,6 @@ body {
 /* ==========================================
    7. TOUCH CONTROLS (D-PAD FOR MOBILE & IPAD)
    ========================================== */
-/* 🛠️ แก้ไข: ซ่อน D-Pad ไว้เพื่อป้องกันการทับกับ Joystick Zone */
 #dpad-container {
   display: none !important;
 }
@@ -308,7 +307,7 @@ body {
   overflow: hidden;
   background-color: rgba(0, 0, 0, 0.5);
   z-index: 10;
-  pointer-events: none; /* ป้องกันการแย่งคลิก */
+  pointer-events: none;
 }
 
 #minimapCanvas {
@@ -318,16 +317,16 @@ body {
 }
 
 /* ==========================================
-   10. VIRTUAL JOYSTICK ZONE (แก้ไขเพิ่มความแม่นยำ)
+   10. VIRTUAL JOYSTICK ZONE
    ========================================== */
 #joystick-zone {
   position: absolute;
-  bottom: 30px;
+  bottom: 90px; /* 👈 ปรับลอยสูงขึ้นมาจากเดิม (30px -> 90px) */
   left: 30px;
   width: 120px;
   height: 120px;
-  z-index: 80; /* 🛠️ เพิ่ม z-index ให้สูงกว่าองค์ประกอบอื่น */
-  touch-action: none; /* ป้องกันการ Scroll หน้าจอขณะหมุนจอย */
+  z-index: 80;
+  touch-action: none;
   cursor: pointer;
 }
 
@@ -340,7 +339,7 @@ body {
   border-radius: 50%;
   box-sizing: border-box;
   backdrop-filter: blur(2px);
-  pointer-events: none; /* ปล่อยให้การคลิกทะลุไปหา #joystick-zone */
+  pointer-events: none;
 }
 
 #joystick-stick {
@@ -354,12 +353,12 @@ body {
   border-radius: 50%;
   transform: translate(-50%, -50%);
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  pointer-events: none; /* ปล่อยให้การสัมผัสส่งตรงไปที่ #joystick-zone */
+  pointer-events: none;
   transition: background-color 0.1s ease;
 }
 
 #joystick-zone:active #joystick-stick {
-  background: rgba(250, 204, 21, 0.9); /* เปลี่ยนเป็นสีเหลืองสว่างเมื่อลากจอย */
+  background: rgba(250, 204, 21, 0.9);
 }
 
 /* ==========================================
@@ -388,7 +387,7 @@ body {
     right: 8px;
   }
   #joystick-zone {
-    bottom: 40px;
+    bottom: 110px; /* 👈 ปรับลอยสูงขึ้นสำหรับจอมือถือ (80px -> 110px) */
     left: 20px;
     width: 110px;
     height: 110px;
