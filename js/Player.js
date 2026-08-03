@@ -167,8 +167,8 @@ class Player {
       vy *= 0.7071;
     }
 
-    // 2. ถ้ามีการลาก Virtual Joystick ให้อิงจาก moveVector
-    if (this.moveVector.x !== 0 || this.moveVector.y !== 0) {
+    // 2. ถ้ามีการลาก Virtual Joystick (ใช้อย่างน้อย > 0.01 เพื่อป้องกันปัญหาลอยตัว)
+    if (Math.abs(this.moveVector.x) > 0.01 || Math.abs(this.moveVector.y) > 0.01) {
       vx = this.moveVector.x;
       vy = this.moveVector.y;
     }

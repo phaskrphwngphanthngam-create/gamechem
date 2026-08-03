@@ -138,7 +138,7 @@ function initGame() {
 const player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2 - 280);
 initGame();
 
-// 🕹️ ระบบ Virtual Joystick Control (iOS / Android / PC)
+// 🕹️ ระบบ Virtual Joystick Control (แก้ไขจุด Pointer Event)
 function setupJoystickControls() {
   const zone = document.getElementById('joystick-zone');
   const stick = document.getElementById('joystick-stick');
@@ -154,11 +154,19 @@ function setupJoystickControls() {
     if (activePointerId !== null) return;
     
     activePointerId = e.pointerId;
+    
+    // คำนวณศูนย์กลาง Joystick
     const rect = zone.getBoundingClientRect();
     center = {
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2
     };
+
+    // ล็อก Pointer กับ zone เพื่อไม่ให้หลุดเวลาลากเร็วนอกเขต
+    if (zone.setPointerCapture) {
+      try { zone.setPointerCapture(e.pointerId); } catch(err) {}
+    }
+
     handleMove(e);
   };
 
@@ -189,15 +197,20 @@ function setupJoystickControls() {
     if (e.pointerId !== activePointerId) return;
     e.preventDefault();
 
+    if (zone.releasePointerCapture) {
+      try { zone.releasePointerCapture(e.pointerId); } catch(err) {}
+    }
+
     activePointerId = null;
     stick.style.transform = `translate(-50%, -50%)`;
     player.moveVector = { x: 0, y: 0 };
   };
 
+  // ผูก Event ไว้ที่ตัว zone
   zone.addEventListener('pointerdown', handleStart);
-  window.addEventListener('pointermove', handleMove);
-  window.addEventListener('pointerup', handleEnd);
-  window.addEventListener('pointercancel', handleEnd);
+  zone.addEventListener('pointermove', handleMove);
+  zone.addEventListener('pointerup', handleEnd);
+  zone.addEventListener('pointercancel', handleEnd);
 }
 
 setupJoystickControls();
