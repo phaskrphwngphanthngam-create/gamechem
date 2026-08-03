@@ -105,11 +105,11 @@ class CheckBall {
     const arrowY = this.y - 42 + hoverY; // ลอยเหนือบอล
     ctx.save();
     
-    // เงาออร่าเรืองแสงสีเหลือง
-    ctx.fillStyle = 'rgba(250, 204, 21, 0.4)';
-    ctx.beginPath();
-    ctx.arc(this.x, arrowY - 2, 14, 0, Math.PI * 2);
-    ctx.fill();
+    // // เงาออร่าเรืองแสงสีเหลือง
+    // ctx.fillStyle = 'rgba(250, 204, 21, 0.4)';
+    // ctx.beginPath();
+    // ctx.arc(this.x, arrowY - 2, 14, 0, Math.PI * 2);
+    // ctx.fill();
 
     // วาดรูปทรงลูกศรสีเหลืองชี้ลง
     ctx.fillStyle = '#FF0000'; // สีแดง
