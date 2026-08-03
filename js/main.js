@@ -1,6 +1,10 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
+// 🗺️ Canvas สำหรับ Mini-map
+const minimapCanvas = document.getElementById('minimapCanvas');
+const minimapCtx = minimapCanvas.getContext('2d');
+
 // 💡 1. ขนาดแมพสวนสาธารณะ (World Bounds)
 const WORLD_WIDTH = 2500;  
 const WORLD_HEIGHT = 2000; 
@@ -8,7 +12,7 @@ const WORLD_HEIGHT = 2000;
 // 🏆 ระบบคะแนน เวลา และ Leaderboard State
 let score = 0;
 let answeredCount = 0;
-let totalQuestions = 20; // 👈 ปรับเป็น 20 ข้อ
+let totalQuestions = 20;
 let secondsElapsed = 0;
 let timerInterval = null;
 
@@ -87,7 +91,7 @@ for (let i = 0; i < 35; i++) {
   });
 }
 
-// 💡 2. สุ่มตำแหน่งลูกบอลทั่วแมพ (ปรับระยะห่าง minDistance และ padding ให้เหมาะกับบอล 20 ลูก)
+// 💡 2. สุ่มตำแหน่งลูกบอลทั่วแมพ
 function generateRandomPositions(count, minDistance = 160, padding = 150) {
   const positions = [];
   let attempts = 0;
@@ -117,7 +121,6 @@ function initGame() {
   answeredCount = 0;
   secondsElapsed = 0;
   
-  // อัปเดต UI หน้าจอเริ่มต้น
   document.getElementById("score-text").innerText = score;
   document.getElementById("progress-text").innerText = `0 / ${totalQuestions}`;
   document.getElementById("timer-text").innerText = "00:00";
@@ -135,48 +138,69 @@ function initGame() {
 const player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2 - 280);
 initGame();
 
-// 🕹️ ระบบควบคุม D-PAD สำหรับสัมผัสหน้าจอ (มือถือ / iPad)
-const dpadButtons = {
-  'btn-up': ['ArrowUp', 'KeyW'],
-  'btn-down': ['ArrowDown', 'KeyS'],
-  'btn-left': ['ArrowLeft', 'KeyA'],
-  'btn-right': ['ArrowRight', 'KeyD']
-};
+// 🕹️ ระบบ Virtual Joystick Control (iOS / Android / PC)
+function setupJoystickControls() {
+  const zone = document.getElementById('joystick-zone');
+  const stick = document.getElementById('joystick-stick');
+  
+  if (!zone || !stick) return;
 
-function setupDpadControls() {
-  Object.keys(dpadButtons).forEach(btnId => {
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
+  let activePointerId = null;
+  let center = { x: 0, y: 0 };
+  const maxRadius = 45; // ระยะการดึงสูงสุด
 
-    const keyCodes = dpadButtons[btnId];
-
-    const pressHandler = (e) => {
-      e.preventDefault();
-      if (typeof keys !== 'undefined') {
-        keyCodes.forEach(code => { keys[code] = true; });
-      }
+  const handleStart = (e) => {
+    e.preventDefault();
+    if (activePointerId !== null) return;
+    
+    activePointerId = e.pointerId;
+    const rect = zone.getBoundingClientRect();
+    center = {
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2
     };
+    handleMove(e);
+  };
 
-    const releaseHandler = (e) => {
-      e.preventDefault();
-      if (typeof keys !== 'undefined') {
-        keyCodes.forEach(code => { keys[code] = false; });
-      }
-    };
+  const handleMove = (e) => {
+    if (e.pointerId !== activePointerId) return;
+    e.preventDefault();
 
-    // รองรับระบบสัมผัส (Touch Screen)
-    btn.addEventListener('touchstart', pressHandler, { passive: false });
-    btn.addEventListener('touchend', releaseHandler, { passive: false });
-    btn.addEventListener('touchcancel', releaseHandler, { passive: false });
+    const dx = e.clientX - center.x;
+    const dy = e.clientY - center.y;
+    const distance = Math.hypot(dx, dy);
 
-    // รองรับการคลิกด้วยเมาส์ (สำหรับการทดสอบบนเบราว์เซอร์ PC)
-    btn.addEventListener('mousedown', pressHandler);
-    btn.addEventListener('mouseup', releaseHandler);
-    btn.addEventListener('mouseleave', releaseHandler);
-  });
+    let clampX = dx;
+    let clampY = dy;
+
+    if (distance > maxRadius) {
+      clampX = (dx / distance) * maxRadius;
+      clampY = (dy / distance) * maxRadius;
+    }
+
+    stick.style.transform = `translate(calc(-50% + ${clampX}px), calc(-50% + ${clampY}px))`;
+
+    // ส่งเวกเตอร์ความเร็ว (-1.0 ถึง 1.0) ให้ตัวละคร
+    player.moveVector.x = clampX / maxRadius;
+    player.moveVector.y = clampY / maxRadius;
+  };
+
+  const handleEnd = (e) => {
+    if (e.pointerId !== activePointerId) return;
+    e.preventDefault();
+
+    activePointerId = null;
+    stick.style.transform = `translate(-50%, -50%)`;
+    player.moveVector = { x: 0, y: 0 };
+  };
+
+  zone.addEventListener('pointerdown', handleStart);
+  window.addEventListener('pointermove', handleMove);
+  window.addEventListener('pointerup', handleEnd);
+  window.addEventListener('pointercancel', handleEnd);
 }
 
-setupDpadControls();
+setupJoystickControls();
 
 // 🚧 3. ระบบกันเดินลงน้ำ และกันชนสิ่งตกแต่งทั่วแมพ
 function handleCollisions(player) {
@@ -248,6 +272,58 @@ function update() {
   });
 }
 
+// 🗺️ ระบบวาด Mini-map
+function drawMinimap() {
+  const mw = minimapCanvas.width;
+  const mh = minimapCanvas.height;
+
+  const scaleX = mw / WORLD_WIDTH;
+  const scaleY = mh / WORLD_HEIGHT;
+
+  minimapCtx.clearRect(0, 0, mw, mh);
+
+  // 1. พื้นหลังสวน
+  minimapCtx.fillStyle = '#4ade80';
+  minimapCtx.fillRect(0, 0, mw, mh);
+
+  // 2. สระน้ำตรงกลาง
+  minimapCtx.fillStyle = '#0284c7';
+  minimapCtx.beginPath();
+  minimapCtx.arc((WORLD_WIDTH / 2) * scaleX, (WORLD_HEIGHT / 2) * scaleY, 225 * scaleX, 0, Math.PI * 2);
+  minimapCtx.fill();
+
+  // 3. ลูกบอลเก็บคะแนน (เหลือง)
+  balls.forEach(ball => {
+    if (ball.active) {
+      minimapCtx.fillStyle = '#facc15';
+      minimapCtx.beginPath();
+      minimapCtx.arc(ball.x * scaleX, ball.y * scaleY, 3, 0, Math.PI * 2);
+      minimapCtx.fill();
+    }
+  });
+
+  // 4. ตัวละครผู้เล่น (แดง)
+  minimapCtx.fillStyle = '#ef4444';
+  minimapCtx.beginPath();
+  minimapCtx.arc(player.x * scaleX, player.y * scaleY, 4, 0, Math.PI * 2);
+  minimapCtx.fill();
+
+  // 5. ขอบเขตหน้าจอผู้เล่น (Camera Viewport)
+  let cameraX = player.x - canvas.width / 2;
+  let cameraY = player.y - canvas.height / 2;
+  cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - canvas.width));
+  cameraY = Math.max(0, Math.min(cameraY, WORLD_HEIGHT - canvas.height));
+
+  minimapCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+  minimapCtx.lineWidth = 1.5;
+  minimapCtx.strokeRect(
+    cameraX * scaleX,
+    cameraY * scaleY,
+    canvas.width * scaleX,
+    canvas.height * scaleY
+  );
+}
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -266,6 +342,9 @@ function draw() {
   drawLightingOverlay();
 
   ctx.restore();
+
+  // วาด Mini-map ทับด้านบนสุด
+  drawMinimap();
 }
 
 // 🏞️ วาดพื้นหลังสวน

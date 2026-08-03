@@ -4,13 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>เกมความรู้ทางเคมี - การแก้ปัญหาพอลิเมอร์</title>
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
 
   <div id="game-container">
     <canvas id="gameCanvas"></canvas>
     
+    <!-- 🗺️ Mini-map (มุมขวาบน) -->
+    <div id="minimap-container">
+      <canvas id="minimapCanvas" width="160" height="120"></canvas>
+    </div>
+
     <!-- 🎮 UI แสดงคะแนน เวลา และความคืบหน้า (มุมซ้ายบน) -->
     <div id="game-ui">
       <div class="ui-card">
@@ -24,19 +29,18 @@
         </div>
         <div class="ui-row">
           <span class="ui-label">PROGRESS</span>
-          <span id="progress-text" class="ui-value">0 / 10</span>
+          <span id="progress-text" class="ui-value">0 / 20</span>
         </div>
       </div>
     </div>
 
-    <div id="controls-hint">🎮 ใช้ ปุ่มลูกศร / WASD หรือ ปุ่มสัมผัสบนจอ ในการเดิน</div>
+    <div id="controls-hint">🎮 ใช้ ปุ่มลูกศร / WASD หรือ Virtual Joystick บนหน้าจอ</div>
 
-    <!-- 🕹️ ปุ่มกดเดิน (D-Pad) สำหรับ มือถือ / iPad -->
-    <div id="dpad-container">
-      <button class="dpad-btn dpad-up" id="btn-up">▲</button>
-      <button class="dpad-btn dpad-left" id="btn-left">◀</button>
-      <button class="dpad-btn dpad-right" id="btn-right">▶</button>
-      <button class="dpad-btn dpad-down" id="btn-down">▼</button>
+    <!-- 🕹️ Virtual Joystick สำหรับมือถือ & แท็บเล็ต (มุมซ้ายล่าง) -->
+    <div id="joystick-zone">
+      <div id="joystick-base">
+        <div id="joystick-stick"></div>
+      </div>
     </div>
 
     <!-- Modals -->
@@ -67,7 +71,6 @@
         <div id="finalScore" class="score-display"></div>
         <p id="badgeText">ยอดเยี่ยม! คุณคือผู้เชี่ยวชาญพอลิเมอร์</p>
         
-        <!-- ช่องกรอกชื่อลงตาราง Leaderboard -->
         <div class="leaderboard-input-box" style="margin: 15px 0;">
           <input type="text" id="playerNameInput" placeholder="กรอกชื่อของคุณ..." maxlength="12" style="padding: 10px; font-size: 16px; border-radius: 6px; border: 2px solid #facc15; text-align: center; width: 80%;">
           <button class="btn-action" onclick="submitScore()" style="margin-top: 10px; background: #eab308;">💾 บันทึกคะแนน</button>
@@ -77,13 +80,11 @@
       </div>
     </div>
 
-    <!-- 📊 หน้าต่าง Leaderboard (ตารางจัดอันดับ) -->
+    <!-- 📊 หน้าต่าง Leaderboard -->
     <div id="leaderboardModal" class="modal">
       <div class="modal-content">
         <h2>🥇 ตารางอันดับผู้เล่น (Top 10)</h2>
-        <div id="leaderboardList" class="leaderboard-list">
-          <!-- รายชื่อจะถูกใส่ผ่าน JavaScript -->
-        </div>
+        <div id="leaderboardList" class="leaderboard-list"></div>
         <button class="btn-action" onclick="closeLeaderboard()" style="margin-top: 15px;">ปิดหน้านี้</button>
       </div>
     </div>
