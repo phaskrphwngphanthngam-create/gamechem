@@ -157,10 +157,10 @@ class Player {
     let vy = 0;
 
     // 1. รับค่าจาก คีย์บอร์ด (PC)
-    if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']) vy -= 1;
-    if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']) vy += 1;
-    if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']) vx -= 1;
-    if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']) vx += 1;
+    if (this.keys['ArrowUp'] || this.keys['w'] || this.keys['W']||this.key['ไ']||this.key['"']) vy -= 1;
+    if (this.keys['ArrowDown'] || this.keys['s'] || this.keys['S']||this.key['ห']||this.key['ฆ']) vy += 1;
+    if (this.keys['ArrowLeft'] || this.keys['a'] || this.keys['A']||this.key['ฟ']||this.key['ฤ']) vx -= 1;
+    if (this.keys['ArrowRight'] || this.keys['d'] || this.keys['D']||this.key['ก']||this.key['ฏ']) vx += 1;
 
     if (vx !== 0 && vy !== 0) {
       vx *= 0.7071;
