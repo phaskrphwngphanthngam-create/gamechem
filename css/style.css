@@ -421,3 +421,42 @@ body {
   border: 1px solid #cbd5e1;
   background-color: #ffffff;
 }
+/* 📖 ปุ่มไอคอนหนังสือกลางจอด้านบน */
+#book-icon-btn {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 99;
+  background: rgba(15, 23, 42, 0.85);
+  border: 2px solid #fde047;
+  color: #ffffff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+#book-icon-btn:hover {
+  background: #fde047;
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 6px 16px rgba(250, 204, 21, 0.4);
+}
+
+/* ปรับแต่งหัวข้อในกล่องอ่านเนื้อหา */
+.study-content h3 {
+  color: #1e293b;
+  font-size: 15px;
+  margin-bottom: 4px;
+}
+
+.study-content p {
+  color: #475569;
+}

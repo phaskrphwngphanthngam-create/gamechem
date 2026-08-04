@@ -32,11 +32,19 @@ function getRandomQuestions(allQuestions, count = 20) {
   return shuffled.slice(0, Math.min(count, shuffled.length));
 }
 
-// ⏱️ ระบบจับเวลา
+// ⏱️ ระบบจับเวลาปรับปรุงใหม่
 function startTimer() {
   secondsElapsed = 0;
   clearInterval(timerInterval);
-  
+  resumeTimer();
+}
+
+function pauseTimer() {
+  clearInterval(timerInterval);
+}
+
+function resumeTimer() {
+  clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     secondsElapsed++;
     const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
@@ -132,13 +140,13 @@ function initGame() {
     return new CheckBall(randomPositions[index].x, randomPositions[index].y, index);
   });
 
-  startTimer();
+  // 💡 เอา startTimer(); ออกจากตรงนี้ เพื่อให้เวลาจับหลังจากผู้เล่นเลือกเมนูแล้วเท่านั้น
 }
 
 const player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2 - 280);
 initGame();
 
-// 🕹️ ระบบ Virtual Joystick Control (แก้ไขจุด Pointer Event)
+// 🕹️ ระบบ Virtual Joystick Control
 function setupJoystickControls() {
   const zone = document.getElementById('joystick-zone');
   const stick = document.getElementById('joystick-stick');
@@ -147,7 +155,7 @@ function setupJoystickControls() {
 
   let activePointerId = null;
   let center = { x: 0, y: 0 };
-  const maxRadius = 45; // ระยะการดึงสูงสุด
+  const maxRadius = 45;
 
   const handleStart = (e) => {
     e.preventDefault();
@@ -155,14 +163,12 @@ function setupJoystickControls() {
     
     activePointerId = e.pointerId;
     
-    // คำนวณศูนย์กลาง Joystick
     const rect = zone.getBoundingClientRect();
     center = {
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2
     };
 
-    // ล็อก Pointer กับ zone เพื่อไม่ให้หลุดเวลาลากเร็วนอกเขต
     if (zone.setPointerCapture) {
       try { zone.setPointerCapture(e.pointerId); } catch(err) {}
     }
@@ -188,7 +194,6 @@ function setupJoystickControls() {
 
     stick.style.transform = `translate(calc(-50% + ${clampX}px), calc(-50% + ${clampY}px))`;
 
-    // ส่งเวกเตอร์ความเร็ว (-1.0 ถึง 1.0) ให้ตัวละคร
     player.moveVector.x = clampX / maxRadius;
     player.moveVector.y = clampY / maxRadius;
   };
@@ -206,7 +211,6 @@ function setupJoystickControls() {
     player.moveVector = { x: 0, y: 0 };
   };
 
-  // ผูก Event ไว้ที่ตัว zone
   zone.addEventListener('pointerdown', handleStart);
   zone.addEventListener('pointermove', handleMove);
   zone.addEventListener('pointerup', handleEnd);
@@ -269,6 +273,7 @@ function handleCollisions(player) {
 }
 
 function update() {
+  // หากมี Modal ตัวใดเปิดอยู่ (รวม Start Screen และ Study Guide) ให้หยุดเดิน
   if (document.querySelector('.modal[style*="display: flex"]')) return;
 
   player.update(WORLD_WIDTH, WORLD_HEIGHT);
@@ -295,17 +300,14 @@ function drawMinimap() {
 
   minimapCtx.clearRect(0, 0, mw, mh);
 
-  // 1. พื้นหลังสวน
   minimapCtx.fillStyle = '#4ade80';
   minimapCtx.fillRect(0, 0, mw, mh);
 
-  // 2. สระน้ำตรงกลาง
   minimapCtx.fillStyle = '#0284c7';
   minimapCtx.beginPath();
   minimapCtx.arc((WORLD_WIDTH / 2) * scaleX, (WORLD_HEIGHT / 2) * scaleY, 225 * scaleX, 0, Math.PI * 2);
   minimapCtx.fill();
 
-  // 3. ลูกบอลเก็บคะแนน (เหลือง)
   balls.forEach(ball => {
     if (ball.active) {
       minimapCtx.fillStyle = '#facc15';
@@ -315,13 +317,11 @@ function drawMinimap() {
     }
   });
 
-  // 4. ตัวละครผู้เล่น (แดง)
   minimapCtx.fillStyle = '#ef4444';
   minimapCtx.beginPath();
   minimapCtx.arc(player.x * scaleX, player.y * scaleY, 4, 0, Math.PI * 2);
   minimapCtx.fill();
 
-  // 5. ขอบเขตหน้าจอผู้เล่น (Camera Viewport)
   let cameraX = player.x - canvas.width / 2;
   let cameraY = player.y - canvas.height / 2;
   cameraX = Math.max(0, Math.min(cameraX, WORLD_WIDTH - canvas.width));
@@ -356,11 +356,9 @@ function draw() {
 
   ctx.restore();
 
-  // วาด Mini-map ทับด้านบนสุด
   drawMinimap();
 }
 
-// 🏞️ วาดพื้นหลังสวน
 function drawParkGround() {
   const centerX = WORLD_WIDTH / 2;
   const centerY = WORLD_HEIGHT / 2;
@@ -441,7 +439,6 @@ function drawParkGround() {
   ctx.strokeRect(8, 8, WORLD_WIDTH - 16, WORLD_HEIGHT - 16);
 }
 
-// ⛲ วาดน้ำพุ
 function drawFountain(fX, fY) {
   const time = Date.now() * 0.003;
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
@@ -492,7 +489,6 @@ function drawFountain(fX, fY) {
   ctx.fillRect(fX - 1, fY - 42, 2, 22);
 }
 
-// 🌲 วาดวัตถุ + เงา
 function drawParkObjectsAndPlayer() {
   const drawables = [];
 
@@ -566,7 +562,6 @@ function drawParkObjectsAndPlayer() {
   drawables.forEach(item => item.draw());
 }
 
-// 💡 แสงบรรยากาศ
 function drawLightingOverlay() {
   ctx.fillStyle = 'rgba(251, 146, 60, 0.05)'; 
   ctx.fillRect(0, 0, WORLD_WIDTH, WORLD_HEIGHT);
@@ -582,13 +577,6 @@ function drawLightingOverlay() {
     ctx.arc(l.x, l.y - 25, 90, 0, Math.PI * 2);
     ctx.fill();
   });
-}
-
-function resetGame() {
-  document.getElementById("summaryModal").style.display = "none";
-  player.x = WORLD_WIDTH / 2;
-  player.y = WORLD_HEIGHT / 2 - 280;
-  initGame();
 }
 
 function gameLoop() {

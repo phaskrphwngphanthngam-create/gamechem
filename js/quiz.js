@@ -2,6 +2,55 @@
 score = typeof score !== 'undefined' ? score : 0;
 answeredCount = typeof answeredCount !== 'undefined' ? answeredCount : 0;
 let currentQuestionIndex = -1;
+let isGameStarted = false; // สถิติสถานะว่าเล่นเกมอยู่หรือยัง
+
+// ------------------------------------
+// 🚀 ระบบเปิด/ปิด หน้า Start Menu และ หน้าเนื้อหา (Study Guide)
+// ------------------------------------
+
+// 1. กด "อ่านเนื้อหาก่อน" จากหน้าเมนูหลัก
+function showStudyGuide() {
+  document.getElementById('startMenuModal').style.display = 'none';
+  document.getElementById('studyModal').style.display = 'flex';
+}
+
+// 2. ปิดหน้าอ่านเนื้อหา แล้วไปเริ่มเล่นเกม (หรือเล่นต่อ)
+function closeStudyGuide() {
+  document.getElementById('studyModal').style.display = 'none';
+  
+  if (!isGameStarted) {
+    isGameStarted = true;
+    if (typeof startTimer === 'function') {
+      startTimer();
+    }
+  } else {
+    // หากกดเปิดอ่านระหว่างเล่น ให้เริ่มนับเวลาต่อ
+    if (typeof resumeTimer === 'function') {
+      resumeTimer();
+    }
+  }
+}
+
+// 3. กด "เล่นเลย" จากหน้าเมนูหลัก
+function startGameDirectly() {
+  document.getElementById('startMenuModal').style.display = 'none';
+  isGameStarted = true;
+  if (typeof startTimer === 'function') {
+    startTimer();
+  }
+}
+
+// 4. กดไอคอนหนังสือกลางจอด้านบนขณะเล่นเกม (พักเวลาชั่วคราว)
+function openStudyInGame() {
+  if (typeof pauseTimer === 'function') {
+    pauseTimer();
+  }
+  document.getElementById('studyModal').style.display = 'flex';
+}
+
+// ------------------------------------
+// 🎮 ระบบ Quiz & Game Mechanics เดิม
+// ------------------------------------
 
 // 1. เปิดหน้าคำถาม
 function openQuiz(index) {
@@ -181,6 +230,7 @@ function closeLeaderboard() {
 function resetGame() {
   score = 0;
   answeredCount = 0;
+  isGameStarted = false;
 
   const scoreTextElem = document.getElementById('score-text');
   const progressTextElem = document.getElementById('progress-text');
@@ -205,4 +255,7 @@ function resetGame() {
 
   const summaryModal = document.getElementById('summaryModal');
   if (summaryModal) summaryModal.style.display = 'none';
+  
+  // เปิด Modal Start Screen ใหม่เมื่อเล่นซ้ำ
+  document.getElementById('startMenuModal').style.display = 'flex';
 }
