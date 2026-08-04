@@ -24,6 +24,7 @@ resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
 
 function getRandomQuestions(allQuestions, count = 20) {
+  if (!allQuestions || !Array.isArray(allQuestions)) return [];
   let shuffled = [...allQuestions];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -32,7 +33,7 @@ function getRandomQuestions(allQuestions, count = 20) {
   return shuffled.slice(0, Math.min(count, shuffled.length));
 }
 
-// ⏱️ ระบบจับเวลาปรับปรุงใหม่
+// ⏱️ ระบบจับเวลา
 function startTimer() {
   secondsElapsed = 0;
   clearInterval(timerInterval);
@@ -47,16 +48,19 @@ function resumeTimer() {
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     secondsElapsed++;
-    const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
-    const secs = String(secondsElapsed % 60).padStart(2, '0');
-    
     const timerElem = document.getElementById("timer-text");
-    if (timerElem) timerElem.innerText = `${mins}:${secs}`;
+    if (timerElem) timerElem.innerText = formatTime(secondsElapsed);
   }, 1000);
 }
 
 function stopTimer() {
   clearInterval(timerInterval);
+}
+
+function formatTime(totalSeconds) {
+  const mins = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+  const secs = String(Math.floor(totalSeconds % 60)).padStart(2, '0');
+  return `${mins}:${secs}`;
 }
 
 // 🌳 ข้อมูลตำแหน่งสิ่งตกแต่ง 32x32 บนแมพ
@@ -129,18 +133,24 @@ function initGame() {
   answeredCount = 0;
   secondsElapsed = 0;
   
-  document.getElementById("score-text").innerText = score;
-  document.getElementById("progress-text").innerText = `0 / ${totalQuestions}`;
-  document.getElementById("timer-text").innerText = "00:00";
+  const scoreElem = document.getElementById("score-text");
+  const progressElem = document.getElementById("progress-text");
+  const timerElem = document.getElementById("timer-text");
 
-  currentQuestions = getRandomQuestions(questions, totalQuestions);
-  const randomPositions = generateRandomPositions(currentQuestions.length);
+  if (scoreElem) scoreElem.innerText = score;
+  if (progressElem) progressElem.innerText = `0 / ${totalQuestions}`;
+  if (timerElem) timerElem.innerText = "00:00";
 
-  balls = currentQuestions.map((q, index) => {
-    return new CheckBall(randomPositions[index].x, randomPositions[index].y, index);
-  });
+  if (typeof questions !== 'undefined') {
+    currentQuestions = getRandomQuestions(questions, totalQuestions);
+    const randomPositions = generateRandomPositions(currentQuestions.length);
 
-  // 💡 เอา startTimer(); ออกจากตรงนี้ เพื่อให้เวลาจับหลังจากผู้เล่นเลือกเมนูแล้วเท่านั้น
+    balls = currentQuestions.map((q, index) => {
+      return new CheckBall(randomPositions[index].x, randomPositions[index].y, index);
+    });
+  }
+  
+  populateStudentDropdown();
 }
 
 const player = new Player(WORLD_WIDTH / 2, WORLD_HEIGHT / 2 - 280);
@@ -284,7 +294,9 @@ function update() {
       let dist = Math.hypot(player.x - ball.x, player.y - ball.y);
       if (dist < player.size + 18) {
         ball.active = false;
-        openQuiz(ball.qIndex);
+        if (typeof openQuiz === 'function') {
+          openQuiz(ball.qIndex);
+        }
       }
     }
   });
@@ -586,3 +598,159 @@ function gameLoop() {
 }
 
 gameLoop();
+
+// ==========================================
+// 🎮 UI Control & Menu Handlers
+// ==========================================
+
+function startGameDirectly() {
+  const startModal = document.getElementById("startMenuModal");
+  if (startModal) startModal.style.display = "none";
+  startTimer();
+}
+
+function showStudyGuide() {
+  const startModal = document.getElementById("startMenuModal");
+  const studyModal = document.getElementById("studyModal");
+  if (startModal) startModal.style.display = "none";
+  if (studyModal) studyModal.style.display = "flex";
+}
+
+function closeStudyGuide() {
+  const studyModal = document.getElementById("studyModal");
+  if (studyModal) studyModal.style.display = "none";
+  startTimer();
+}
+
+function openStudyInGame() {
+  pauseTimer();
+  const studyModal = document.getElementById("studyModal");
+  if (studyModal) studyModal.style.display = "flex";
+}
+
+function resetGame() {
+  const summaryModal = document.getElementById("summaryModal");
+  if (summaryModal) summaryModal.style.display = "none";
+  
+  player.x = WORLD_WIDTH / 2;
+  player.y = WORLD_HEIGHT / 2 - 280;
+  
+  initGame();
+  
+  const startModal = document.getElementById("startMenuModal");
+  if (startModal) startModal.style.display = "flex";
+}
+
+// ==========================================
+// 🏆 Leaderboard Logic (เลือกเลขที่ 1-30 + UPSERT)
+// ==========================================
+
+function populateStudentDropdown() {
+  const selectElem = document.getElementById("playerSelect");
+  if (!selectElem) return;
+
+  selectElem.innerHTML = '<option value="">-- เลือกเลขที่ (1-30) --</option>';
+  for (let i = 1; i <= 30; i++) {
+    const opt = document.createElement("option");
+    opt.value = `เลขที่ ${i}`;
+    opt.textContent = `เลขที่ ${i}`;
+    selectElem.appendChild(opt);
+  }
+}
+
+function submitScore() {
+  const selectElem = document.getElementById("playerSelect");
+  const selectedStudent = selectElem ? selectElem.value : "";
+
+  if (!selectedStudent) {
+    alert("กรุณาเลือกเลขที่ของคุณก่อนบันทึกคะแนนครับ!");
+    return;
+  }
+
+  const currentScore = score;
+  const currentTime = secondsElapsed;
+
+  // 1. ดึงข้อมูล Leaderboard เดิมจาก LocalStorage
+  let leaderboard = JSON.parse(localStorage.getItem("polymer_leaderboard")) || [];
+
+  // 2. ค้นหาว่ามีเลขที่นี้อยู่ในตารางเดิมหรือไม่
+  const existingIndex = leaderboard.findIndex(item => item.name === selectedStudent);
+
+  if (existingIndex !== -1) {
+    const existingRecord = leaderboard[existingIndex];
+
+    // เขียนทับเมื่อ: ทำเวลาน้อยกว่าเดิม OR ทำคะแนนได้มากกว่าเดิม
+    if (currentTime < existingRecord.time || currentScore > existingRecord.score) {
+      leaderboard[existingIndex] = {
+        name: selectedStudent,
+        score: currentScore,
+        time: currentTime,
+        updatedAt: new Date().toISOString()
+      };
+      alert(`🎉 ทำลายสถิติเดิมของ ${selectedStudent}! เวลาใหม่: ${formatTime(currentTime)}`);
+    } else {
+      alert(`⏱️ เวลาของ ${selectedStudent} (${formatTime(currentTime)}) ยังไม่ดีกว่าสถิติเดิม (${formatTime(existingRecord.time)})`);
+    }
+  } else {
+    // เพิ่มข้อมูลของเลขที่ใหม่
+    leaderboard.push({
+      name: selectedStudent,
+      score: currentScore,
+      time: currentTime,
+      updatedAt: new Date().toISOString()
+    });
+    alert(`✅ บันทึกคะแนนของ ${selectedStudent} เรียบร้อยแล้ว!`);
+  }
+
+  // 3. เรียงอันดับ: คะแนนสูงกว่าขึ้นก่อน -> ถ้าคะแนนเท่ากัน เวลาน้อยกว่าขึ้นก่อน
+  leaderboard.sort((a, b) => {
+    if (b.score !== a.score) {
+      return b.score - a.score;
+    }
+    return a.time - b.time;
+  });
+
+  // 4. บันทึกลง LocalStorage
+  localStorage.setItem("polymer_leaderboard", JSON.stringify(leaderboard));
+
+  // 5. รีเซ็ตค่าการเลือกแล้วเปลี่ยนไปเปิดหน้า Leaderboard
+  if (selectElem) selectElem.value = "";
+  const summaryModal = document.getElementById("summaryModal");
+  if (summaryModal) summaryModal.style.display = "none";
+
+  showLeaderboard();
+}
+
+function showLeaderboard() {
+  const leaderboardList = document.getElementById("leaderboardList");
+  const leaderboard = JSON.parse(localStorage.getItem("polymer_leaderboard")) || [];
+
+  if (leaderboardList) {
+    if (leaderboard.length === 0) {
+      leaderboardList.innerHTML = "<p style='text-align: center; color: #64748b;'>ยังไม่มีข้อมูลคะแนน</p>";
+    } else {
+      const top10 = leaderboard.slice(0, 10);
+      
+      let html = "<ol style='list-style: none; padding: 0; margin: 0;'>";
+      top10.forEach((item, index) => {
+        html += `
+          <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 15px;">
+            <span><strong style="color: #eab308; min-width: 30px; display: inline-block;">#${index + 1}</strong> ${item.name}</span>
+            <span style="color: #475569; font-size: 14px;">คะแนน: <strong>${item.score}</strong> | เวลา: <strong>${formatTime(item.time)}</strong></span>
+          </li>
+        `;
+      });
+      html += "</ol>";
+      
+      leaderboardList.innerHTML = html;
+    }
+  }
+
+  const leaderboardModal = document.getElementById("leaderboardModal");
+  if (leaderboardModal) leaderboardModal.style.display = "flex";
+}
+
+function closeLeaderboard() {
+  const leaderboardModal = document.getElementById("leaderboardModal");
+  if (leaderboardModal) leaderboardModal.style.display = "none";
+}

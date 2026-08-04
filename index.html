@@ -56,11 +56,12 @@
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <button class="btn-action" onclick="showStudyGuide()">📖 อ่านเนื้อหาทบทวนความรู้</button>
           <button class="btn-action" style="background: #16a34a;" onclick="startGameDirectly()">⚔️ ลุยเลย! เริ่มเล่นเกม</button>
+          <button class="btn-action" style="background: #0284c7;" onclick="showLeaderboard()">🏆 ดูตารางอันดับ</button>
         </div>
       </div>
     </div>
 
-    <!-- 📖 Modals อ่านเนื้อหาทบทวน (แสดงรูปภาพสรุปขนาดใหญ่) -->
+    <!-- 📖 Modals อ่านเนื้อหาทบทวน -->
     <div id="studyModal" class="modal">
       <div class="modal-content study-modal-large">
         <div class="study-header">
@@ -76,7 +77,7 @@
       </div>
     </div>
 
-    <!-- Modals อื่นๆ -->
+    <!-- ❓ Modals คำถาม (Quiz Modal) -->
     <div id="quizModal" class="modal">
       <div class="modal-content">
         <h3>คำถามเกี่ยวกับพอลิเมอร์</h3>
@@ -89,6 +90,7 @@
       </div>
     </div>
 
+    <!-- 🔔 Modals ผลลัพธ์แต่ละข้อ (Result Modal) -->
     <div id="resultModal" class="modal">
       <div class="modal-content">
         <h2 id="resultTitle"></h2>
@@ -97,7 +99,7 @@
       </div>
     </div>
 
-    <!-- 🏆 หน้าสรุปผล + บันทึกชื่อลง Leaderboard -->
+    <!-- 🏆 หน้าสรุปผลเมื่อเล่นจบ + เลือกเลขที่บันทึกคะแนน -->
     <div id="summaryModal" class="modal">
       <div class="modal-content">
         <h2>🏆 สรุปผลการเรียนรู้</h2>
@@ -105,15 +107,24 @@
         <p id="badgeText">ยอดเยี่ยม! คุณคือผู้เชี่ยวชาญพอลิเมอร์</p>
         
         <div class="leaderboard-input-box" style="margin: 15px 0;">
-          <input type="text" id="playerNameInput" placeholder="กรอกชื่อของคุณ..." maxlength="12" style="padding: 10px; font-size: 16px; border-radius: 6px; border: 2px solid #facc15; text-align: center; width: 80%;">
-          <button class="btn-action" onclick="submitScore()" style="margin-top: 10px; background: #eab308;">💾 บันทึกคะแนน</button>
+          <label for="playerSelect" style="display: block; margin-bottom: 8px; font-weight: bold; color: #334155;">
+            เลือกเลขที่ของคุณ:
+          </label>
+          <select id="playerSelect" style="padding: 10px; font-size: 16px; border-radius: 6px; border: 2px solid #facc15; text-align: center; width: 80%; background: #fff; cursor: pointer;">
+            <option value="">-- เลือกเลขที่ (1-30) --</option>
+            <!-- JS จะสร้าง option เลขที่ 1 ถึง 30 ให้ใส่อัตโนมัติ -->
+          </select>
+
+          <button class="btn-action" onclick="submitScore()" style="margin-top: 12px; background: #eab308; width: 80%;">
+            💾 บันทึกคะแนน
+          </button>
         </div>
 
-        <button class="btn-action" onclick="resetGame()" style="background: #475569;">เล่นใหม่อีกครั้ง</button>
+        <button class="btn-action" onclick="resetGame()" style="background: #475569; width: 80%;">เล่นใหม่อีกครั้ง</button>
       </div>
     </div>
 
-    <!-- 📊 หน้าต่าง Leaderboard -->
+    <!-- 📊 หน้าต่าง Leaderboard (Top 10) -->
     <div id="leaderboardModal" class="modal">
       <div class="modal-content">
         <h2>🥇 ตารางอันดับผู้เล่น (Top 10)</h2>
