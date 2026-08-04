@@ -1,3 +1,6 @@
+// 🌐 URL ของ Google Apps Script Web App
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxF5ugvaXbWClY9NMRLnvgFu1-K9naPimmTaD_17WJ8QZgQDtGuRrj7hcTtWlI7dUbQoQ/exec";
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -283,7 +286,6 @@ function handleCollisions(player) {
 }
 
 function update() {
-  // หากมี Modal ตัวใดเปิดอยู่ (รวม Start Screen และ Study Guide) ให้หยุดเดิน
   if (document.querySelector('.modal[style*="display: flex"]')) return;
 
   player.update(WORLD_WIDTH, WORLD_HEIGHT);
@@ -642,7 +644,7 @@ function resetGame() {
 }
 
 // ==========================================
-// 🏆 Leaderboard Logic (เลือกเลขที่ 1-30 + UPSERT)
+// 🏆 Google Sheets Leaderboard Logic
 // ==========================================
 
 function populateStudentDropdown() {
@@ -658,96 +660,108 @@ function populateStudentDropdown() {
   }
 }
 
-function submitScore() {
+async function submitScore() {
   const selectElem = document.getElementById("playerSelect");
   const selectedStudent = selectElem ? selectElem.value : "";
+  const submitBtn = document.getElementById("submitBtn");
 
   if (!selectedStudent) {
     alert("กรุณาเลือกเลขที่ของคุณก่อนบันทึกคะแนนครับ!");
     return;
   }
 
-  const currentScore = score;
-  const currentTime = secondsElapsed;
-
-  // 1. ดึงข้อมูล Leaderboard เดิมจาก LocalStorage
-  let leaderboard = JSON.parse(localStorage.getItem("polymer_leaderboard")) || [];
-
-  // 2. ค้นหาว่ามีเลขที่นี้อยู่ในตารางเดิมหรือไม่
-  const existingIndex = leaderboard.findIndex(item => item.name === selectedStudent);
-
-  if (existingIndex !== -1) {
-    const existingRecord = leaderboard[existingIndex];
-
-    // เขียนทับเมื่อ: ทำเวลาน้อยกว่าเดิม OR ทำคะแนนได้มากกว่าเดิม
-    if (currentTime < existingRecord.time || currentScore > existingRecord.score) {
-      leaderboard[existingIndex] = {
-        name: selectedStudent,
-        score: currentScore,
-        time: currentTime,
-        updatedAt: new Date().toISOString()
-      };
-      alert(`🎉 ทำลายสถิติเดิมของ ${selectedStudent}! เวลาใหม่: ${formatTime(currentTime)}`);
-    } else {
-      alert(`⏱️ เวลาของ ${selectedStudent} (${formatTime(currentTime)}) ยังไม่ดีกว่าสถิติเดิม (${formatTime(existingRecord.time)})`);
-    }
-  } else {
-    // เพิ่มข้อมูลของเลขที่ใหม่
-    leaderboard.push({
-      name: selectedStudent,
-      score: currentScore,
-      time: currentTime,
-      updatedAt: new Date().toISOString()
-    });
-    alert(`✅ บันทึกคะแนนของ ${selectedStudent} เรียบร้อยแล้ว!`);
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL")) {
+    alert("กรุณาตั้งค่า GOOGLE_SCRIPT_URL ในไฟล์ main.js ก่อนใช้งานครับ!");
+    return;
   }
 
-  // 3. เรียงอันดับ: คะแนนสูงกว่าขึ้นก่อน -> ถ้าคะแนนเท่ากัน เวลาน้อยกว่าขึ้นก่อน
-  leaderboard.sort((a, b) => {
-    if (b.score !== a.score) {
-      return b.score - a.score;
+  const payload = {
+    number: selectedStudent,
+    time: secondsElapsed,
+    score: score
+  };
+
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerText = "⏳ กำลังบันทึก...";
+  }
+
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+
+    const resData = await response.json();
+
+    if (resData.status === "success") {
+      alert(`✅ บันทึกคะแนนของ ${selectedStudent} ลงใน Google Sheets เรียบร้อยแล้ว!`);
+    } else {
+      alert("❌ เกิดข้อผิดพลาดขณะบันทึกคะแนน: " + (resData.message || "ไม่ทราบสาเหตุ"));
     }
-    return a.time - b.time;
-  });
+  } catch (err) {
+    console.error("Error submitting score:", err);
+    alert("❌ ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้");
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerText = "💾 บันทึกคะแนน";
+    }
+    if (selectElem) selectElem.value = "";
+    
+    const summaryModal = document.getElementById("summaryModal");
+    if (summaryModal) summaryModal.style.display = "none";
 
-  // 4. บันทึกลง LocalStorage
-  localStorage.setItem("polymer_leaderboard", JSON.stringify(leaderboard));
-
-  // 5. รีเซ็ตค่าการเลือกแล้วเปลี่ยนไปเปิดหน้า Leaderboard
-  if (selectElem) selectElem.value = "";
-  const summaryModal = document.getElementById("summaryModal");
-  if (summaryModal) summaryModal.style.display = "none";
-
-  showLeaderboard();
+    showLeaderboard();
+  }
 }
 
-function showLeaderboard() {
+async function showLeaderboard() {
   const leaderboardList = document.getElementById("leaderboardList");
-  const leaderboard = JSON.parse(localStorage.getItem("polymer_leaderboard")) || [];
+  const leaderboardModal = document.getElementById("leaderboardModal");
+
+  if (leaderboardModal) leaderboardModal.style.display = "flex";
 
   if (leaderboardList) {
-    if (leaderboard.length === 0) {
-      leaderboardList.innerHTML = "<p style='text-align: center; color: #64748b;'>ยังไม่มีข้อมูลคะแนน</p>";
-    } else {
-      const top10 = leaderboard.slice(0, 10);
-      
-      let html = "<ol style='list-style: none; padding: 0; margin: 0;'>";
-      top10.forEach((item, index) => {
-        html += `
-          <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 15px;">
-            <span><strong style="color: #eab308; min-width: 30px; display: inline-block;">#${index + 1}</strong> ${item.name}</span>
-            <span style="color: #475569; font-size: 14px;">คะแนน: <strong>${item.score}</strong> | เวลา: <strong>${formatTime(item.time)}</strong></span>
-          </li>
-        `;
-      });
-      html += "</ol>";
-      
-      leaderboardList.innerHTML = html;
-    }
+    leaderboardList.innerHTML = "<p style='text-align: center; color: #64748b;'>⏳ กำลังโหลดข้อมูลตารางอันดับ...</p>";
   }
 
-  const leaderboardModal = document.getElementById("leaderboardModal");
-  if (leaderboardModal) leaderboardModal.style.display = "flex";
+  if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.includes("YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL")) {
+    if (leaderboardList) {
+      leaderboardList.innerHTML = "<p style='text-align: center; color: #ef4444;'>กรุณาตั้งค่า GOOGLE_SCRIPT_URL ใน main.js</p>";
+    }
+    return;
+  }
+
+  try {
+    const response = await fetch(GOOGLE_SCRIPT_URL);
+    const leaderboard = await response.json();
+
+    if (leaderboardList) {
+      if (!Array.isArray(leaderboard) || leaderboard.length === 0) {
+        leaderboardList.innerHTML = "<p style='text-align: center; color: #64748b;'>ยังไม่มีข้อมูลคะแนน</p>";
+      } else {
+        const top10 = leaderboard.slice(0, 10);
+        let html = "<ol style='list-style: none; padding: 0; margin: 0;'>";
+        top10.forEach((item, index) => {
+          html += `
+            <li style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; font-size: 15px;">
+              <span><strong style="color: #eab308; min-width: 30px; display: inline-block;">#${index + 1}</strong> ${item.number}</span>
+              <span style="color: #475569; font-size: 14px;">คะแนน: <strong>${item.score}</strong> | เวลา: <strong>${formatTime(item.time)}</strong></span>
+            </li>
+          `;
+        });
+        html += "</ol>";
+        leaderboardList.innerHTML = html;
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching leaderboard:", err);
+    if (leaderboardList) {
+      leaderboardList.innerHTML = "<p style='text-align: center; color: #ef4444;'>❌ ไม่สามารถโหลดตารางอันดับได้</p>";
+    }
+  }
 }
 
 function closeLeaderboard() {
