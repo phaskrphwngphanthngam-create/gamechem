@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>เกมความรู้ทางเคมี - การแก้ปัญหาพอลิเมอร์</title>
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
 
@@ -60,35 +60,19 @@
       </div>
     </div>
 
-    <!-- 📖 Modals อ่านเนื้อหาทบทวน (Study Guide Modal) -->
+    <!-- 📖 Modals อ่านเนื้อหาทบทวน (แสดงรูปภาพสรุปขนาดใหญ่) -->
     <div id="studyModal" class="modal">
-      <div class="modal-content" style="max-width: 600px; text-align: left;">
-        <h2>📖 เนื้อหาทบทวนความรู้พอลิเมอร์</h2>
-        <div class="study-content" style="max-height: 350px; overflow-y: auto; margin: 15px 0; padding-right: 8px; font-size: 14px; line-height: 1.6;">
-          <h3>1. PET (Polyethylene Terephthalate) - พลาสติกหมายเลข 1</h3>
-          <p>เหนียว ทนทาน ไม่แตกง่าย โปร่งใส นิยมใช้ทำขวดน้ำดื่ม ขวดน้ำอัดลม และรีไซเคิลเป็นเส้นใยทำเสื้อผ้า</p>
-          <hr style="margin: 10px 0; border: 0; border-top: 1px solid #e2e8f0;">
-          
-          <h3>2. HDPE (High-Density Polyethylene) - พลาสติกหมายเลข 2</h3>
-          <p>แข็ง ทนทานต่อสารเคมี ขุ่น นิยมใช้ทำขวดนม ขวดแชมพู ขวดน้ำยาทำความสะอาด และถังขยะ</p>
-          <hr style="margin: 10px 0; border: 0; border-top: 1px solid #e2e8f0;">
-
-          <h3>3. PVC (Polyvinyl Chloride) - พลาสติกหมายเลข 3</h3>
-          <p>แข็งแรง ทนน้ำ และทนสารเคมี นิยมใช้ทำท่อประปา สายยาง หุ้มสายไฟ และชุดกันฝน</p>
-          <hr style="margin: 10px 0; border: 0; border-top: 1px solid #e2e8f0;">
-
-          <h3>4. LDPE (Low-Density Polyethylene) - พลาสติกหมายเลข 4</h3>
-          <p>นิ่ม ยืดหยุ่นได้ดี นิยมใช้ทำถุงใส่น้ำแข็ง ฟิล์มถนอมอาหาร (Wrap) และถุงพลาสติกนิ่ม</p>
-          <hr style="margin: 10px 0; border: 0; border-top: 1px solid #e2e8f0;">
-
-          <h3>5. PP (Polypropylene) - พลาสติกหมายเลข 5</h3>
-          <p>ทนความร้อนสูง ทนทาน นิยมใช้ทำกล่องใส่อาหารสำหรับอุ่นไมโครเวฟ ถุงใส่แกงร้อน และฝาขวดน้ำ</p>
-          <hr style="margin: 10px 0; border: 0; border-top: 1px solid #e2e8f0;">
-
-          <h3>6. PS (Polystyrene) - พลาสติกหมายเลข 6</h3>
-          <p>เปราะง่าย เบา ป้องกันความร้อนได้ดี นิยมใช้ทำโฟมบรรจุอาหาร ถ้วยพลาสติกเบา</p>
+      <div class="modal-content study-modal-large">
+        <div class="study-header">
+          <h2>📖 สรุปเนื้อหาความรู้พอลิเมอร์และการจัดการขยะ</h2>
+          <span class="close-btn" onclick="closeStudyGuide()">&times;</span>
         </div>
-        <button class="btn-action" onclick="closeStudyGuide()">เข้าใจแล้ว ไปเริ่มเล่นเกมกันเลย!</button>
+        
+        <div class="study-image-container">
+          <img src="assets/S__21069897.jpg" alt="สรุปความรู้เรื่องพอลิเมอร์และการจัดการขยะพอลิเมอร์" class="study-img-a4">
+        </div>
+
+        <button class="btn-action" onclick="closeStudyGuide()" style="margin-top: 15px; width: 100%; max-width: 300px;">เข้าใจแล้ว ไปเริ่มเล่นเกมกันเลย!</button>
       </div>
     </div>
 
