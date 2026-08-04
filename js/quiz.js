@@ -6,16 +6,27 @@ let currentQuestionIndex = -1;
 // 1. เปิดหน้าคำถาม
 function openQuiz(index) {
   currentQuestionIndex = index;
-  // 💡 ดึงข้อสอบจาก currentQuestions (ชุด 20 ข้อที่สุ่มมาจาก main.js)
   const q = currentQuestions[index];
   
-  // ตั้งค่าสถานการณ์
-  document.getElementById('scenarioText').innerText = q.scenario;
+  // ตั้งค่าสถานการณ์ข้อความคำถาม
+  let scenarioHTML = q.scenario;
+  
+  // 🖼️ แสดงรูปภาพประจำข้อในตัวคำถามหลัก (ถ้ามี q.image)
+  if (q.image) {
+    scenarioHTML += `<br><img src="${q.image}" alt="รูปประกอบคำถาม" class="scenario-image">`;
+  }
+  document.getElementById('scenarioText').innerHTML = scenarioHTML;
   
   // รีเซ็ตกล่องคำใบ้ให้อยู่ในสถานะ "ปิด" ก่อนเสมอ
   const hintBox = document.getElementById('hintBox');
   hintBox.style.display = 'none';
-  hintBox.innerText = `💡 คำใบ้: ${q.hint || "ไม่มีคำใบ้สำหรับข้อนี้"}`;
+  
+  // 💡 สร้างเนื้อหาคำใบ้ (ข้อความ + รูปภาพคำใบ้ q.hintImage ถ้ามี)
+  let hintContent = `💡 คำใบ้: ${q.hint || "ไม่มีคำใบ้สำหรับข้อนี้"}`;
+  if (q.hintImage) {
+    hintContent += `<br><img src="${q.hintImage}" alt="คำใบ้" class="hint-image">`;
+  }
+  hintBox.innerHTML = hintContent;
 
   // สร้างปุ่มตัวเลือก A, B, C, D
   const container = document.getElementById('optionsContainer');
@@ -56,11 +67,18 @@ function checkAnswer(selectedIndex) {
     score += 10;
     title.innerText = "✅ ถูกต้อง!";
     title.style.color = "#16a34a";
-    detail.innerText = "+10 คะแนน\nตอบคำถามเกี่ยวกับพอลิเมอร์ได้ถูกต้อง";
+    detail.innerHTML = "+10 คะแนน<br>ตอบคำถามเกี่ยวกับพอลิเมอร์ได้ถูกต้อง";
   } else {
     title.innerText = "❌ ยังไม่ถูกต้อง";
     title.style.color = "#dc2626";
-    detail.innerText = `คำตอบที่ถูกต้องคือ: ${q.options[q.answer]}\n💡 คำใบ้: ${q.hint || "ไม่มีคำใบ้สำหรับข้อนี้"}`;
+    
+    let wrongContent = `คำตอบที่ถูกต้องคือ: ${q.options[q.answer]}<br>💡 คำใบ้: ${q.hint || "ไม่มีคำใบ้สำหรับข้อนี้"}`;
+    if (q.hintImage) {
+      wrongContent += `<br><img src="${q.hintImage}" alt="คำใบ้" class="result-image">`;
+    } else if (q.image) {
+      wrongContent += `<br><img src="${q.image}" alt="รูปประกอบ" class="result-image">`;
+    }
+    detail.innerHTML = wrongContent;
   }
 
   answeredCount++;
@@ -69,7 +87,7 @@ function checkAnswer(selectedIndex) {
   const scoreTextElem = document.getElementById('score-text');
   const progressTextElem = document.getElementById('progress-text');
   if (scoreTextElem) scoreTextElem.innerText = score;
-  if (progressTextElem) progressTextElem.innerText = `${answeredCount} / ${typeof balls !== 'undefined' ? balls.length : 20}`; // 👈 เปลี่ยนเป็น 20
+  if (progressTextElem) progressTextElem.innerText = `${answeredCount} / ${typeof balls !== 'undefined' ? balls.length : 20}`;
 
   document.getElementById('resultModal').style.display = 'flex';
 }
@@ -78,9 +96,8 @@ function checkAnswer(selectedIndex) {
 function closeResult() {
   document.getElementById('resultModal').style.display = 'none';
   
-  const totalBalls = typeof balls !== 'undefined' ? balls.length : 20; // 👈 เปลี่ยนเป็น 20
+  const totalBalls = typeof balls !== 'undefined' ? balls.length : 20;
 
-  // ถ้าตอบครบทุกข้อแล้ว
   if (answeredCount >= totalBalls) {
     if (typeof stopTimer === 'function') {
       stopTimer();
@@ -89,7 +106,6 @@ function closeResult() {
     const timerElem = document.getElementById('timer-text');
     const timeTaken = timerElem ? timerElem.innerText : "00:00";
     
-    // แสดงคะแนนรวมใน summaryModal
     const finalScoreElem = document.getElementById('finalScore');
     if (finalScoreElem) {
       finalScoreElem.innerText = `${score} / ${totalBalls * 10} คะแนน (เวลา: ${timeTaken})`;
@@ -114,20 +130,17 @@ function submitScore() {
     date: new Date().toLocaleDateString("th-TH")
   };
 
-  // ดึงข้อมูล Leaderboard เดิม
   let leaderboard = JSON.parse(localStorage.getItem("polymer_leaderboard") || "[]");
   leaderboard.push(newEntry);
 
-  // เรียงลำดับ: คะแนนสูงสุดขึ้นก่อน หากคะแนนเท่ากันให้วัดที่เวลาที่ใช้น้อยกว่า
   leaderboard.sort((a, b) => b.score - a.score || a.rawTime - b.rawTime);
-  leaderboard = leaderboard.slice(0, 10); // เก็บท็อป 10 อันดับ
+  leaderboard = leaderboard.slice(0, 10);
 
   localStorage.setItem("polymer_leaderboard", JSON.stringify(leaderboard));
 
   if (nameInput) nameInput.value = "";
   document.getElementById("summaryModal").style.display = "none";
   
-  // แสดงตารางอันดับ
   showLeaderboard();
 }
 
@@ -164,20 +177,18 @@ function closeLeaderboard() {
   resetGame();
 }
 
-// 8. รีเซ็ตเกมใหม่ (สุ่มตำแหน่งบอล + คำถามชุดใหม่)
+// 8. รีเซ็ตเกมใหม่
 function resetGame() {
   score = 0;
   answeredCount = 0;
 
-  // รีเซ็ตค่าการแสดงผล HUD
   const scoreTextElem = document.getElementById('score-text');
   const progressTextElem = document.getElementById('progress-text');
   const timerElem = document.getElementById('timer-text');
   if (scoreTextElem) scoreTextElem.innerText = score;
-  if (progressTextElem) progressTextElem.innerText = `0 / ${typeof totalQuestions !== 'undefined' ? totalQuestions : 20}`; // 👈 เปลี่ยนเป็น 20
+  if (progressTextElem) progressTextElem.innerText = `0 / ${typeof totalQuestions !== 'undefined' ? totalQuestions : 20}`;
   if (timerElem) timerElem.innerText = "00:00";
 
-  // ย้ายตัวละครไปวางไว้ตรงกลางของแมพใหญ่
   if (typeof player !== 'undefined') {
     if (typeof WORLD_WIDTH !== 'undefined' && typeof WORLD_HEIGHT !== 'undefined') {
       player.x = WORLD_WIDTH / 2;
@@ -188,7 +199,6 @@ function resetGame() {
     }
   }
 
-  // เรียกฟังก์ชันสุ่มคำถามและสุ่มตำแหน่งสร้างจุดบอลใหม่จาก main.js
   if (typeof initGame === 'function') {
     initGame();
   }
