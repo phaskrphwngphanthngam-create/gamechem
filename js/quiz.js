@@ -102,7 +102,7 @@ function toggleHint() {
   }
 }
 
-// 3. ตรวจคำตอบ
+// 3. ตรวจคำตอบ (ปรับปรุงการแสดง reason ทั้งกรณีตอบถูกและตอบผิด)
 function checkAnswer(selectedIndex) {
   document.getElementById('quizModal').style.display = 'none';
   
@@ -112,16 +112,19 @@ function checkAnswer(selectedIndex) {
   const title = document.getElementById('resultTitle');
   const detail = document.getElementById('resultDetail');
 
+  // เตรียมข้อความเหตุผล (Reason)
+  const reasonText = q.reason ? `<br>📝 <strong>เหตุผล:</strong> ${q.reason}` : "";
+
   if (isCorrect) {
     score += 10;
     title.innerText = "✅ ถูกต้อง!";
     title.style.color = "#16a34a";
-    detail.innerHTML = "+10 คะแนน<br>ตอบคำถามเกี่ยวกับพอลิเมอร์ได้ถูกต้อง";
+    detail.innerHTML = `+10 คะแนน<br>ตอบคำถามเกี่ยวกับพอลิเมอร์ได้ถูกต้อง${reasonText}`;
   } else {
     title.innerText = "❌ ยังไม่ถูกต้อง";
     title.style.color = "#dc2626";
     
-    let wrongContent = `คำตอบที่ถูกต้องคือ: ${q.options[q.answer]}<br>💡 คำใบ้: ${q.hint || "ไม่มีคำใบ้สำหรับข้อนี้"}`;
+    let wrongContent = `คำตอบที่ถูกต้องคือ: <strong>${q.options[q.answer]}</strong>${reasonText}<br>💡 คำใบ้: ${q.hint || "ไม่มีคำใบ้สำหรับข้อนี้"}`;
     if (q.hintImage) {
       wrongContent += `<br><img src="${q.hintImage}" alt="คำใบ้" class="result-image">`;
     } else if (q.image) {
@@ -136,7 +139,7 @@ function checkAnswer(selectedIndex) {
   const scoreTextElem = document.getElementById('score-text');
   const progressTextElem = document.getElementById('progress-text');
   if (scoreTextElem) scoreTextElem.innerText = score;
-  if (progressTextElem) progressTextElem.innerText = `${answeredCount} / ${typeof balls !== 'undefined' ? balls.length : 20}`;
+  if (progressTextElem) progressTextElem.innerText = `${answeredCount} / ${typeof balls !== 'undefined' ? balls.length : (typeof totalQuestions !== 'undefined' ? totalQuestions : 20)}`;
 
   document.getElementById('resultModal').style.display = 'flex';
 }
@@ -145,7 +148,7 @@ function checkAnswer(selectedIndex) {
 function closeResult() {
   document.getElementById('resultModal').style.display = 'none';
   
-  const totalBalls = typeof balls !== 'undefined' ? balls.length : 20;
+  const totalBalls = typeof balls !== 'undefined' ? balls.length : (typeof totalQuestions !== 'undefined' ? totalQuestions : 20);
 
   if (answeredCount >= totalBalls) {
     if (typeof stopTimer === 'function') {
